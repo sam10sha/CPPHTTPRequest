@@ -18,36 +18,85 @@ set LIB_ORIGINAL=
 goto done
 
 
-::Executables
+::EXECUTABLES
 :Main.exe
+set obj_dependency_list=obj\driver.obj
+set lib_dependency_list=lib\Network.lib
 call:bin
 if not exist bin\Main.exe (
-	call:obj\driver.obj
-	call:obj\HttpRequestMessage.obj
-	link /out:bin\Main.exe obj\driver.obj obj\HttpRequestMessage.obj
+	call:Main_exe_obj
+	call:Main_exe_lib
+	link /machine:x86 /libpath:%cd%\resources\boost\lib\x86 /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
 )
+set obj_dependency_list=
+set lib_dependency_list=
 goto:eof
-
-
-::Object files
-:obj\driver.obj
+:Main_exe_obj
+set src_dependency_list=src\Sources\driver.cpp
 call:obj
-if not exist obj\driver.obj (
-    cl /c /EHsc /I%cd%\src\Headers /Foobj\driver.obj src\Sources\driver.cpp
+for %%i in (%src_dependency_list%) do (
+    if not exist obj\%%~ni.obj (
+	    cl /c /EHsc /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+	)
+)
+set src_dependency_list=
+goto:eof
+:Main_exe_lib
+set lib_dependency_list=lib\Network.lib
+for %%i in (%lib_dependency_list%) do (
+    call:%%i
+)
+set lib_dependency_list=
+goto:eof
+
+
+
+
+:lib\Network.lib
+set obj_dependency_list=obj\HttpBytecontent.obj^
+ obj\HttpContent.obj^
+ obj\HttpFileStreamContent.obj^
+ obj\HttpRequestMessage.obj^
+ obj\HttpResponseMessage.obj^
+ obj\HttpStringContent.obj^
+ obj\NetEnv.obj^
+ obj\WebClient.obj
+call:lib
+if not exist lib\Network.lib (
+    call:Network_lib_obj
+	lib /out:lib\Network.lib %obj_dependency_list%
 )
 goto:eof
-:obj\HttpRequestMessage.obj
+:Network_lib_obj
+set src_dependency_list=src\Sources\HttpBytecontent.cpp^
+ src\Sources\HttpContent.cpp^
+ src\Sources\HttpFileStreamContent.cpp^
+ src\Sources\HttpRequestMessage.cpp^
+ src\Sources\HttpResponseMessage.cpp^
+ src\Sources\HttpStringContent.cpp^
+ src\Sources\NetEnv.cpp^
+ src\Sources\WebClient.cpp
 call:obj
-if not exist obj\HttpRequestMessage.obj (
-    cl /c /EHsc /I%cd%\src\Headers /Foobj\HttpRequestMessage.obj src\Sources\HttpRequestMessage.cpp
+for %%i in (%src_dependency_list%) do (
+    if not exist obj\%%~ni.obj (
+	    cl /c /EHsc /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+	)
 )
+set src_dependency_list=
 goto:eof
 
 
-::Directories
+
+
+::DIRECTORIES
 :bin
 if not exist bin (
     md bin
+)
+goto:eof
+:lib
+if not exist lib (
+	md lib
 )
 goto:eof
 :obj
@@ -57,9 +106,11 @@ if not exist obj (
 goto:eof
 
 
-::Utilities
+
+
+::UTILITIES
 :clean
-set del_list=bin obj
+set del_list=bin lib obj
 for %%i in (%del_list%) do (
     if exist %%i (
 	    del /q %%i\*
@@ -70,6 +121,4 @@ goto:eof
 :error
 echo Invalid arguments
 goto:eof
-
-
 :done
