@@ -1,6 +1,8 @@
 #ifndef STDAFX_H
 #define STDAFX_H
 
+#include <boost/asio.hpp>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
