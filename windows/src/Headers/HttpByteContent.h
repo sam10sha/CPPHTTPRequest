@@ -2,6 +2,7 @@
 #define HTTPBYTECONTENT_H
 
 #include "HttpContent.h"
+#include "IStreamWrap.h"
 
 namespace Network
 {
@@ -51,6 +52,7 @@ namespace Network
     // Public member functions
     public:
         std::istream* GetContent();
+		void GetContent(IStreamWrap& Stream) const;
     };
 }
 

@@ -4,7 +4,6 @@
 // Public member functions
 std::string Network::WebClient::SendRequest(const Network::HttpRequestMessage& RequestMsg) const
 {
-#ifdef OS_LINUX
     boost::asio::io_service IOService;
     boost::asio::ip::tcp::socket Socket(IOService);
     boost::asio::ip::tcp::endpoint EndPoint(
@@ -17,9 +16,11 @@ std::string Network::WebClient::SendRequest(const Network::HttpRequestMessage& R
     MakeRequest(Socket, RequestMsg);
     ReceiveResponse(Socket, Response);
     Response = ParseResponse(Response);
+	
     return Response;
-#elif defined(OS_WIN)
-	bool ServerConnected = false;
+	
+	
+	/* bool ServerConnected = false;
 	bool RequestSent = false;
 	bool ResponseReceived = false;
 	SOCKET Socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -38,17 +39,13 @@ std::string Network::WebClient::SendRequest(const Network::HttpRequestMessage& R
 	{
 		Response = ParseResponse(Response);
 	}
-	return Response;
-#else // OS_VERSION
-	return std::string();
-#endif // OS_VERSION
+	return Response; */
 }
 
 
 
 
 // Private member functions
-#ifdef OS_LINUX
 void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const Network::HttpRequestMessage& RequestMsg) const
 {
     boost::system::error_code Error;
@@ -77,8 +74,7 @@ void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket, s
         ReceivedResponse += Data;
     }
 }
-#elif (defined(OS_WIN))
-bool Network::WebClient::ConnectToServer(const SOCKET Socket, const Network::HttpRequestMessage& RequestMsg) const
+/* bool Network::WebClient::ConnectToServer(const SOCKET Socket, const Network::HttpRequestMessage& RequestMsg) const
 {
 	int ConnectError = 0;
 	struct sockaddr_in SockAddress;
@@ -111,8 +107,7 @@ bool Network::WebClient::ReceiveResponse(const SOCKET Socket, std::string& Recei
 		}
 	} while(NumBytesReceived > 0);
 	return ReceivedResponse.length() > 0;
-}
-#endif // OS_VERSION
+} */
 
 std::string Network::WebClient::ParseResponse(const std::string& ServerResponse) const
 {

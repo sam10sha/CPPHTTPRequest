@@ -34,7 +34,11 @@ Network::HttpContent::~HttpContent()
 std::istream* Network::HttpContent::GetContent()
 {
     return mContentStream;
-}  
+} 
+void Network::HttpContent::GetContent(Network::IStreamWrap& Stream) const
+{
+    Stream.mStream = mContentStream;
+}
 size_t Network::HttpContent::GetContentLength() const
 {
     return mContentLength;

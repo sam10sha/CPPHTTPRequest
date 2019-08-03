@@ -26,7 +26,7 @@ call:bin
 if not exist bin\Main.exe (
 	call:Main_exe_obj
 	call:Main_exe_lib
-	link /machine:x86 /libpath:%cd%\resources\boost\lib\x86 /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
+	link /machine:x64 /libpath:%cd%\resources\boost\lib\x64 /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
 )
 set obj_dependency_list=
 set lib_dependency_list=
@@ -36,7 +36,7 @@ set src_dependency_list=src\Sources\driver.cpp
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-	    cl /c /EHsc /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+	    cl /c /EHsc /Od /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
 	)
 )
 set src_dependency_list=
@@ -59,7 +59,6 @@ set obj_dependency_list=obj\HttpBytecontent.obj^
  obj\HttpRequestMessage.obj^
  obj\HttpResponseMessage.obj^
  obj\HttpStringContent.obj^
- obj\NetEnv.obj^
  obj\WebClient.obj
 call:lib
 if not exist lib\Network.lib (
@@ -74,12 +73,11 @@ set src_dependency_list=src\Sources\HttpBytecontent.cpp^
  src\Sources\HttpRequestMessage.cpp^
  src\Sources\HttpResponseMessage.cpp^
  src\Sources\HttpStringContent.cpp^
- src\Sources\NetEnv.cpp^
  src\Sources\WebClient.cpp
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-	    cl /c /EHsc /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+	    cl /c /EHsc /Od /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
 	)
 )
 set src_dependency_list=

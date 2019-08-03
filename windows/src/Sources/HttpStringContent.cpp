@@ -29,3 +29,19 @@ Network::HttpStringContent& Network::HttpStringContent::operator=(const HttpStri
     mContentLength = Content.mContentLength;
     return *this;
 }
+
+
+// Public methods      
+std::istream* Network::HttpStringContent::GetContent()
+{
+    if(mContentStream)
+    {
+        delete mContentStream;
+    }
+    mContentStream = new std::istringstream(mStringContent);
+    return mContentStream;
+} 
+void Network::HttpStringContent::GetContent(Network::IStreamWrap& Stream) const
+{
+    Stream.mStream = new std::istringstream(mStringContent);
+}

@@ -2,6 +2,7 @@
 #define HTTPFILESTREAMCONTENT_H
 
 #include "HttpContent.h"
+#include "IStreamWrap.h"
 
 namespace Network
 {
@@ -20,6 +21,11 @@ namespace Network
     // Public operator overloads
     public:
         void operator=(const HttpFileStreamContent& Content);
+            
+	// Public methods            
+	public:
+		std::istream* GetContent();
+		void GetContent(IStreamWrap& Stream) const;
     };
 }
 

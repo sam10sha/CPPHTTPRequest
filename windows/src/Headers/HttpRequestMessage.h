@@ -50,6 +50,7 @@ namespace Network
         std::string GetQueryPath() const;
         std::string GetRequestHeader() const;
         std::string GetRequestBodyString() const;
+		std::istream* GetRequestBodyStream() const;
         std::string GetRequest() const;
         
         void SetMethod(const std::string& Method);

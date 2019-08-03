@@ -26,3 +26,19 @@ void Network::HttpFileStreamContent::operator=(const HttpFileStreamContent& Cont
 {
     
 }
+
+
+// Public methods      
+std::istream* Network::HttpFileStreamContent::GetContent()
+{
+    if(mContentStream)
+    {
+        delete mContentStream;
+    }
+    mContentStream = new std::ifstream(mFileName.c_str());
+    return mContentStream;
+} 
+void Network::HttpFileStreamContent::GetContent(Network::IStreamWrap& Stream) const
+{
+    Stream.mStream = new std::ifstream(mFileName.c_str());
+}
