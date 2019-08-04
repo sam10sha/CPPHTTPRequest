@@ -1,6 +1,6 @@
 linux/bin
 linux/lib
 linux/obj
-windows/bin
-windows/lib
-windows/obj
+win_linux/bin
+win_linux/lib
+win_linux/obj
