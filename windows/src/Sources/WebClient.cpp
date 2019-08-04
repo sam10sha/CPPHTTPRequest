@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "WebClient.h"
 
+// Public construction
+Network::WebClient::WebClient()
+	: RequestDelimiter("\r\n") { }
+
+
 // Public member functions
 std::string Network::WebClient::SendRequest(const Network::HttpRequestMessage& RequestMsg) const
 {
@@ -14,39 +19,38 @@ std::string Network::WebClient::SendRequest(const Network::HttpRequestMessage& R
     
     Socket.connect(EndPoint);
     MakeRequest(Socket, RequestMsg);
-    ReceiveResponse(Socket, Response);
+    ReceiveResponse_2(Socket, Response);
     Response = ParseResponse(Response);
 	
     return Response;
-	
-	
-	/* bool ServerConnected = false;
-	bool RequestSent = false;
-	bool ResponseReceived = false;
-	SOCKET Socket = socket(AF_INET, SOCK_STREAM, 0);
-	std::string Response;
-	
-	ServerConnected = ConnectToServer(Socket, RequestMsg);
-	if(ServerConnected)
-	{
-		RequestSent = MakeRequest(Socket, RequestMsg);
-	}
-	if(RequestSent == true)
-	{
-		ResponseReceived = ReceiveResponse(Socket, Response);
-	}
-	if(ResponseReceived == true)
-	{
-		Response = ParseResponse(Response);
-	}
-	return Response; */
 }
 
 
 
 
 // Private member functions
-void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const Network::HttpRequestMessage& RequestMsg) const
+void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const HttpRequestMessage& RequestMsg) const
+{
+	IStreamWrap StreamWrap;
+    boost::system::error_code Error;
+    // Create request
+    boost::asio::streambuf Request;
+    std::ostream RequestStream(&Request);
+	
+	
+    // Send request header
+    RequestStream << RequestMsg.GetAllRequestHeaders();
+    boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
+	RequestStream << RequestDelimiter;
+	
+	// Send request content
+	RequestMsg.GetRequestBodyStream(StreamWrap);
+	std::istream& Stream = *StreamWrap.mStream;
+	RequestStream << Stream.rdbuf();
+    boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
+	RequestStream << RequestDelimiter;
+}
+void Network::WebClient::MakeRequest_2(boost::asio::ip::tcp::socket& Socket, const Network::HttpRequestMessage& RequestMsg) const
 {
     boost::system::error_code Error;
     // Create request
@@ -57,7 +61,14 @@ void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const
     // Send request
     boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
 }
-void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket, std::string& ReceivedResponse) const
+void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket, HttpResponseMessage& ResponseMsg) const
+{
+	boost::system::error_code Error;
+    // Create response buffer
+    boost::asio::streambuf Response;
+    //boost::asio::read_until(Socket, Response, Error);
+}
+void Network::WebClient::ReceiveResponse_2(boost::asio::ip::tcp::socket& Socket, std::string& ReceivedResponse) const
 {
     boost::system::error_code Error;
     // Create response buffer
@@ -74,41 +85,6 @@ void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket, s
         ReceivedResponse += Data;
     }
 }
-/* bool Network::WebClient::ConnectToServer(const SOCKET Socket, const Network::HttpRequestMessage& RequestMsg) const
-{
-	int ConnectError = 0;
-	struct sockaddr_in SockAddress;
-	SockAddress.sin_family = AF_INET;
-	SockAddress.sin_addr.s_addr = inet_addr(RequestMsg.GetServerIPAddress().c_str());
-	SockAddress.sin_port = htons((unsigned short)RequestMsg.GetPort());
-	ConnectError = connect(Socket, (const sockaddr *)&SockAddress, sizeof(SockAddress));
-	return ConnectError == 0;
-}
-bool Network::WebClient::MakeRequest(const SOCKET Socket, const Network::HttpRequestMessage& RequestMsg) const
-{
-	int NumBytesWritten = 0;
-	std::string Request = RequestMsg.GetRequest();
-	NumBytesWritten = send(Socket, Request.c_str(), (int)Request.length(), 0);
-	return NumBytesWritten == Request.length();
-}
-bool Network::WebClient::ReceiveResponse(const SOCKET Socket, std::string& ReceivedResponse) const
-{
-	int NumBytesReceived = 0;
-	const size_t BufferLength = 1 << 12; // 4 KB
-	char Buffer[BufferLength];
-	ReceivedResponse.clear();
-	do
-	{
-		std::memset(Buffer, 0, BufferLength);
-		NumBytesReceived = recv(Socket, Buffer, BufferLength - 1, 0);
-		if(NumBytesReceived > 0)
-		{
-			ReceivedResponse += Buffer;
-		}
-	} while(NumBytesReceived > 0);
-	return ReceivedResponse.length() > 0;
-} */
-
 std::string Network::WebClient::ParseResponse(const std::string& ServerResponse) const
 {
     std::string Body;

@@ -8,6 +8,7 @@
 #include "HttpByteContent.h"
 #include "HttpFileStreamContent.h"
 #include "HttpStringContent.h"
+#include "IStreamWrap.h"
 
 namespace Network
 {
@@ -48,9 +49,10 @@ namespace Network
         std::string GetServerIPAddress() const;
         long GetPort() const;
         std::string GetQueryPath() const;
-        std::string GetRequestHeader() const;
+		std::string GetRequestHeader(const std::string& Key) const;
+        std::string GetAllRequestHeaders() const;
         std::string GetRequestBodyString() const;
-		std::istream* GetRequestBodyStream() const;
+		void GetRequestBodyStream(IStreamWrap& Stream) const;
         std::string GetRequest() const;
         
         void SetMethod(const std::string& Method);

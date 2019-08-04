@@ -54,7 +54,17 @@ std::string Network::HttpRequestMessage::GetQueryPath() const
 {
     return mQueryPath;
 }
-std::string Network::HttpRequestMessage::GetRequestHeader() const
+std::string Network::HttpRequestMessage::GetRequestHeader(const std::string& Key) const
+{
+	std::string HeaderValue;
+	std::map<const std::string, std::string>::const_iterator HeaderIndex = mHeaders.find(Key);
+	if(HeaderIndex != mHeaders.end())
+	{
+		HeaderValue = HeaderIndex->second;
+	}
+	return HeaderValue;
+}
+std::string Network::HttpRequestMessage::GetAllRequestHeaders() const
 {
     std::string Header;
     Header += GetMethod() + " " + GetQueryPath() + " HTTP/1.1\r\n";
@@ -105,12 +115,16 @@ std::string Network::HttpRequestMessage::GetRequestBodyString() const
     }
     return RequestBody;
 }
+void Network::HttpRequestMessage::GetRequestBodyStream(Network::IStreamWrap& Stream) const
+{
+	mBody->GetContent(Stream);
+}
 std::string Network::HttpRequestMessage::GetRequest() const
 {
     std::string Request;
     std::string RequestBody = GetRequestBodyString();
     
-    Request += GetRequestHeader();
+    Request += GetAllRequestHeaders();
     Request += "\r\n";
     if(RequestBody.length() > 0)
     {

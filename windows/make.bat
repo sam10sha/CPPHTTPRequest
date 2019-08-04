@@ -1,7 +1,7 @@
 @echo off
 
 set INCLUDE_ORIGINAL=%INCLUDE%
-set INCLUDE=%INCLUDE%;%ProgramFiles%\boost_1_70_0
+set INCLUDE=%INCLUDE%;%ProgramFiles%\boost\boost_1_70_0
 set LIB_ORIGINAL=%LIB%
 set LIB=%LIB%;%ProgramFiles%\boost_1_70_0\stage\lib
 if [%1] == [main] (
@@ -53,7 +53,7 @@ goto:eof
 
 
 :lib\Network.lib
-set obj_dependency_list=obj\HttpBytecontent.obj^
+set obj_dependency_list=obj\HttpByteContent.obj^
  obj\HttpContent.obj^
  obj\HttpFileStreamContent.obj^
  obj\HttpRequestMessage.obj^
@@ -67,7 +67,7 @@ if not exist lib\Network.lib (
 )
 goto:eof
 :Network_lib_obj
-set src_dependency_list=src\Sources\HttpBytecontent.cpp^
+set src_dependency_list=src\Sources\HttpByteContent.cpp^
  src\Sources\HttpContent.cpp^
  src\Sources\HttpFileStreamContent.cpp^
  src\Sources\HttpRequestMessage.cpp^
