@@ -26,7 +26,7 @@ call:bin
 if not exist bin\Main.exe (
 	call:Main_exe_obj
 	call:Main_exe_lib
-	link /machine:x64 /libpath:%cd%\resources\boost\lib\x64 /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
+	link /machine:x64 /libpath:%cd%\resources\boost_1_70_0\lib\x64 /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
 )
 set obj_dependency_list=
 set lib_dependency_list=
