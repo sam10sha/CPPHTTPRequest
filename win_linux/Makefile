@@ -1,6 +1,7 @@
 # Compiler
 CC                          = g++
 AR                          = ar rcs
+RANLIB                      = ranlib
 NOLINK                      = -c
 CFLAGS                      = -std=c++11
 WALL                        = -Wall
