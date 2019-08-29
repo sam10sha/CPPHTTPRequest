@@ -3,7 +3,7 @@
 
 // Public construction
 Network::WebClient::WebClient()
-	: RequestDelimiter("\r\n") { }
+    : RequestDelimiter("\r\n") { }
 
 
 // Public member functions
@@ -35,14 +35,14 @@ void Network::WebClient::SendRequest_2(const Network::HttpRequestMessage& Reques
         (int)RequestMsg.GetPort()
     );
     
-	std::cout << "WebClient[SendRequest_2]: Connecting..." << std::endl;
+    std::cout << "WebClient[SendRequest_2]: Connecting..." << std::endl;
     Socket.connect(EndPoint);
-	std::cout << "WebClient[SendRequest_2]: Sending request..." << std::endl;
+    std::cout << "WebClient[SendRequest_2]: Sending request..." << std::endl;
     MakeRequest(Socket, RequestMsg);
-	std::cout << "WebClient[SendRequest_2]: Receiving response..." << std::endl;
+    std::cout << "WebClient[SendRequest_2]: Receiving response..." << std::endl;
     ReceiveResponse_3(Socket, RequestMsg, ResponseMsg);
-	std::cout << "WebClient[SendRequest_2]: Done" << std::endl;
-	std::cout << "WebClient[SendRequest_2]: Response status code: " << ResponseMsg.GetResponseStatusCode() << std::endl;
+    std::cout << "WebClient[SendRequest_2]: Done" << std::endl;
+    std::cout << "WebClient[SendRequest_2]: Response status code: " << ResponseMsg.GetResponseStatusCode() << std::endl;
 }
 
 
@@ -51,7 +51,7 @@ void Network::WebClient::SendRequest_2(const Network::HttpRequestMessage& Reques
 // Private member functions
 void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const HttpRequestMessage& RequestMsg) const
 {
-	IStreamWrap StreamWrap;
+    IStreamWrap StreamWrap;
     boost::system::error_code Error;
     // Create request
     boost::asio::streambuf Request;
@@ -60,14 +60,14 @@ void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const
 	
     // Send request header
     RequestStream << RequestMsg.GetAllRequestHeaders();
-	RequestStream << RequestDelimiter;
+    RequestStream << RequestDelimiter;
     boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
 	
-	// Send request content
-	RequestMsg.GetRequestBodyStream(StreamWrap);
-	std::istream& Stream = *StreamWrap.mStream;
-	RequestStream << Stream.rdbuf();
-	RequestStream << RequestDelimiter;
+    // Send request content
+    RequestMsg.GetRequestBodyStream(StreamWrap);
+    std::istream& Stream = *StreamWrap.mStream;
+    RequestStream << Stream.rdbuf();
+    RequestStream << RequestDelimiter;
     boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
 }
 void Network::WebClient::MakeRequest_2(boost::asio::ip::tcp::socket& Socket, const Network::HttpRequestMessage& RequestMsg) const
@@ -83,7 +83,7 @@ void Network::WebClient::MakeRequest_2(boost::asio::ip::tcp::socket& Socket, con
 }
 void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket, HttpResponseMessage& ResponseMsg) const
 {
-	boost::system::error_code Error;
+    boost::system::error_code Error;
     // Create response buffer
     boost::asio::streambuf Response;
     //boost::asio::read_until(Socket, Response, Error);
@@ -106,32 +106,32 @@ void Network::WebClient::ReceiveResponse_2(boost::asio::ip::tcp::socket& Socket,
     }
 }
 void Network::WebClient::ReceiveResponse_3(boost::asio::ip::tcp::socket& Socket,
-																	const Network::HttpRequestMessage& RequestMsg,
-																	Network::HttpResponseMessage& ResponseMsg) const
+                                            const Network::HttpRequestMessage& RequestMsg,
+                                            Network::HttpResponseMessage& ResponseMsg) const
 {
-	boost::system::error_code Error;
+    boost::system::error_code Error;
     // Create response buffer
     boost::asio::streambuf Response;
-	std::string Headers;
-	std::string Content;
-	
-	boost::asio::read_until(Socket, Response, "\r\n\r\n", Error);
-	Headers = boost::asio::buffer_cast<const char*>(Response.data());
-	boost::asio::read(Socket, Response, Error);
-	Content = boost::asio::buffer_cast<const char*>(Response.data());
-	
-	std::cout << "WebClient[ReceiveResponse_3]: Headers: " << Headers << std::endl;
-	std::cout << "WebClient[ReceiveResponse_3]: Content: " << Content << std::endl;
-	
-	// Set response message components
-	ResponseMsg.SetMethod(RequestMsg.GetMethod());
-	ResponseMsg.SetURL(RequestMsg.GetURL());
-	ResponseMsg.SetServerHostName(RequestMsg.GetServerHostName());
-	ResponseMsg.SetServerIPAddr(RequestMsg.GetServerIPAddress());
-	ResponseMsg.SetPort(RequestMsg.GetPort());
-	ResponseMsg.SetQueryPath(RequestMsg.GetQueryPath());
-	ResponseMsg.ParseRawHeader(Headers);
-	ResponseMsg.SetStringContent(HttpStringContent(Content));
+    std::string Headers;
+    std::string Content;
+    
+    boost::asio::read_until(Socket, Response, "\r\n\r\n", Error);
+    Headers = boost::asio::buffer_cast<const char*>(Response.data());
+    boost::asio::read(Socket, Response, Error);
+    Content = boost::asio::buffer_cast<const char*>(Response.data());
+    
+    std::cout << "WebClient[ReceiveResponse_3]: Headers: " << Headers << std::endl;
+    std::cout << "WebClient[ReceiveResponse_3]: Content: " << Content << std::endl;
+    
+    // Set response message components
+    ResponseMsg.SetMethod(RequestMsg.GetMethod());
+    ResponseMsg.SetURL(RequestMsg.GetURL());
+    ResponseMsg.SetServerHostName(RequestMsg.GetServerHostName());
+    ResponseMsg.SetServerIPAddr(RequestMsg.GetServerIPAddress());
+    ResponseMsg.SetPort(RequestMsg.GetPort());
+    ResponseMsg.SetQueryPath(RequestMsg.GetQueryPath());
+    ResponseMsg.ParseRawHeader(Headers);
+    ResponseMsg.SetStringContent(HttpStringContent(Content));
 }
 std::string Network::WebClient::ParseResponse(const std::string& ServerResponse) const
 {
@@ -146,12 +146,12 @@ std::string Network::WebClient::ParseResponse(const std::string& ServerResponse)
 // UNSAFE! CAUTION FOR MEMORY LEAK!
 void Network::WebClient::TransferBytesDynamically(std::istream& Stream, char** const StoragePtr) const
 {
-	const size_t INCREMENT_AMT = 1 << 12; // 4 KB
-	const size_t BUF_STORAGE_INCREMENT_AMT = 10;	// 10 storage pointers
-	char** BufferStoragePtrs = new char*[BUF_STORAGE_INCREMENT_AMT];
-	int BufStoragePtrIndex = 0;
-	
-	BufferStoragePtrs[BufStoragePtrIndex] = new char[INCREMENT_AMT];
-	
-	*StoragePtr = new char[INCREMENT_AMT];
+    const size_t INCREMENT_AMT = 1 << 12; // 4 KB
+    const size_t BUF_STORAGE_INCREMENT_AMT = 10;	// 10 storage pointers
+    char** BufferStoragePtrs = new char*[BUF_STORAGE_INCREMENT_AMT];
+    int BufStoragePtrIndex = 0;
+    
+    BufferStoragePtrs[BufStoragePtrIndex] = new char[INCREMENT_AMT];
+    
+    *StoragePtr = new char[INCREMENT_AMT];
 }

@@ -21,14 +21,14 @@ namespace Network
         public:
             virtual ~HttpContent();
         
-		// Public operator overloads
-		public:
-			void operator=(const HttpContent& Content) = delete;
+        // Public operator overloads
+        public:
+            void operator=(const HttpContent& Content) = delete;
             
         // Public methods            
         public:
             virtual std::istream* GetContent();
-			virtual void GetContent(IStreamWrap& Stream) const;
+            virtual void GetContent(IStreamWrap& Stream) const;
             virtual size_t GetContentLength() const;
     };
 }

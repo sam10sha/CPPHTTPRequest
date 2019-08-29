@@ -24,7 +24,7 @@ Network::HttpRequestMessage::~HttpRequestMessage()
     if(mBody)
     {
         delete mBody;
-		mBody = NULL;
+        mBody = NULL;
     }
 }
 
@@ -59,13 +59,13 @@ std::string Network::HttpRequestMessage::GetQueryPath() const
 }
 std::string Network::HttpRequestMessage::GetRequestHeader(const std::string& Key) const
 {
-	std::string HeaderValue;
-	std::map<const std::string, std::string>::const_iterator HeaderIndex = mHeaders.find(Key);
-	if(HeaderIndex != mHeaders.end())
-	{
-		HeaderValue = HeaderIndex->second;
-	}
-	return HeaderValue;
+    std::string HeaderValue;
+    std::map<const std::string, std::string>::const_iterator HeaderIndex = mHeaders.find(Key);
+    if(HeaderIndex != mHeaders.end())
+    {
+        HeaderValue = HeaderIndex->second;
+    }
+    return HeaderValue;
 }
 std::string Network::HttpRequestMessage::GetAllRequestHeaders() const
 {
@@ -107,20 +107,20 @@ std::string Network::HttpRequestMessage::GetRequestBodyString() const
         {
             Buffer = new char[ContentLength + 1];
             std::memset(Buffer, 0, ContentLength + 1);
-			ContentStream->read(Buffer, (std::streamsize)ContentLength);
+            ContentStream->read(Buffer, (std::streamsize)ContentLength);
             RequestBody += Buffer;
         }
         delete[] Buffer;
-		if(RequestBody.length() > 0)
-		{
-			RequestBody += "\r\n";
-		}
+        if(RequestBody.length() > 0)
+        {
+            RequestBody += "\r\n";
+        }
     }
     return RequestBody;
 }
 void Network::HttpRequestMessage::GetRequestBodyStream(Network::IStreamWrap& Stream) const
 {
-	mBody->GetContent(Stream);
+    mBody->GetContent(Stream);
 }
 std::string Network::HttpRequestMessage::GetRequest() const
 {
@@ -132,7 +132,7 @@ std::string Network::HttpRequestMessage::GetRequest() const
     if(RequestBody.length() > 0)
     {
         Request += RequestBody;
-		Request + "\r\n";
+        Request + "\r\n";
     }
     return Request;
 }
@@ -156,7 +156,7 @@ void Network::HttpRequestMessage::SetByteContent(const HttpByteContent* const Co
     if(mBody)
     {
         delete mBody;
-		mBody = NULL;
+        mBody = NULL;
     }
     mBody = new HttpByteContent(*Content);
 }
@@ -165,7 +165,7 @@ void Network::HttpRequestMessage::SetByteContent(const HttpByteContent& Content)
     if(mBody)
     {
         delete mBody;
-		mBody = NULL;
+        mBody = NULL;
     }
     mBody = new HttpByteContent(Content);
 }
@@ -174,7 +174,7 @@ void Network::HttpRequestMessage::SetStringContent(const HttpStringContent* cons
     if(mBody)
     {
         delete mBody;
-		mBody = NULL;
+        mBody = NULL;
     }
     mBody = new HttpStringContent(*Content);
 }
@@ -183,7 +183,7 @@ void Network::HttpRequestMessage::SetStringContent(const HttpStringContent& Cont
     if(mBody)
     {
         delete mBody;
-		mBody = NULL;
+        mBody = NULL;
     }
     mBody = new HttpStringContent(Content);
 }
@@ -192,7 +192,7 @@ void Network::HttpRequestMessage::SetStreamContent(const HttpFileStreamContent* 
     if(mBody)
     {
         delete mBody;
-		mBody = NULL;
+        mBody = NULL;
     }
     mBody = new HttpFileStreamContent(*Content);
 }
@@ -201,7 +201,7 @@ void Network::HttpRequestMessage::SetStreamContent(const HttpFileStreamContent& 
     if(mBody)
     {
         delete mBody;
-		mBody = NULL;
+        mBody = NULL;
     }
     mBody = new HttpFileStreamContent(Content);
 }

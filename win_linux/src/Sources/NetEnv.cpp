@@ -10,32 +10,32 @@ Network::NetEnv Network::NetEnv::Instance;
 Network::NetEnv::NetEnv()
 	: mIsInitialized(false)
 {
-	Initialize();
+    Initialize();
 }
 Network::NetEnv::~NetEnv()
 {
-	CleanUp();
+    CleanUp();
 }
 
 
 // Public member functions
 bool Network::NetEnv::IsInitialized()
 {
-	return mIsInitialized;
+    return mIsInitialized;
 }
 bool Network::NetEnv::Initialize()
 {
-	WSADATA wsaData;
+    WSADATA wsaData;
     int SocketStartupError = 0;
-	if(mIsInitialized == false)
-	{
-		SocketStartupError = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	}
-	return SocketStartupError == 0;
+    if(mIsInitialized == false)
+    {
+        SocketStartupError = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    }
+    return SocketStartupError == 0;
 }
 bool Network::NetEnv::CleanUp()
 {
-	int SocketCleanupError;
-	SocketCleanupError = WSACleanup();
-	return SocketCleanupError == 0;
+    int SocketCleanupError;
+    SocketCleanupError = WSACleanup();
+    return SocketCleanupError == 0;
 }

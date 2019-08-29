@@ -52,7 +52,7 @@ namespace Network
     // Public member functions
     public:
         std::istream* GetContent();
-		void GetContent(IStreamWrap& Stream) const;
+        void GetContent(IStreamWrap& Stream) const;
     };
 }
 

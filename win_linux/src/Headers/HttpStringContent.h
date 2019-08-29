@@ -23,10 +23,10 @@ namespace Network
     public:
         HttpStringContent& operator=(const HttpStringContent& Content);
             
-	// Public methods            
-	public:
-		virtual std::istream* GetContent();
-		virtual void GetContent(IStreamWrap& Stream) const;
+    // Public methods            
+    public:
+        virtual std::istream* GetContent();
+        virtual void GetContent(IStreamWrap& Stream) const;
     };
 }
 

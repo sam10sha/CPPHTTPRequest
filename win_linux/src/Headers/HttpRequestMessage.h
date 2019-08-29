@@ -24,13 +24,12 @@ namespace Network
             IPEndPoint(const std::string& IPAddr, const long Port) :
                 mIPAddr(IPAddr),
                 mPort(Port) { }
-
-			void operator=(const IPEndPoint& EndPt)
-			{
-				mIPAddr.clear();
-				mIPAddr.append(EndPt.mIPAddr);
-				mPort = EndPt.mPort;
-			}
+            void operator=(const IPEndPoint& EndPt)
+            {
+                mIPAddr.clear();
+                mIPAddr.append(EndPt.mIPAddr);
+                mPort = EndPt.mPort;
+            }
         };
         
         
@@ -38,12 +37,12 @@ namespace Network
     public:
         HttpRequestMessage();
         HttpRequestMessage(const std::string& Method, const std::string& URL);
-		HttpRequestMessage(const HttpRequestMessage& RequestMsg) = delete;
+            HttpRequestMessage(const HttpRequestMessage& RequestMsg) = delete;
         ~HttpRequestMessage();
-		
-	// Public operator overloads
-	public:
-		void operator=(const HttpRequestMessage& RequestMsg) = delete;
+        	
+    // Public operator overloads
+    public:
+        void operator=(const HttpRequestMessage& RequestMsg) = delete;
         
     // Public methods
     public:
@@ -54,10 +53,10 @@ namespace Network
         std::string GetServerIPAddress() const;
         long GetPort() const;
         std::string GetQueryPath() const;
-		std::string GetRequestHeader(const std::string& Key) const;
+        std::string GetRequestHeader(const std::string& Key) const;
         std::string GetAllRequestHeaders() const;
         std::string GetRequestBodyString() const;
-		void GetRequestBodyStream(IStreamWrap& Stream) const;
+        void GetRequestBodyStream(IStreamWrap& Stream) const;
         std::string GetRequest() const;
         
         void SetMethod(const std::string& Method);
@@ -74,7 +73,7 @@ namespace Network
     private:
         void DecodeURL();
         void SetRemoteServerIPAddr();
-		bool ResolveIPAddrs(std::vector<IPEndPoint>& IPAddrs);
+        bool ResolveIPAddrs(std::vector<IPEndPoint>& IPAddrs);
         
         
     // Private instance variables

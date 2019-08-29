@@ -60,5 +60,5 @@ std::istream* Network::HttpByteContent::GetContent()
 }
 void Network::HttpByteContent::GetContent(Network::IStreamWrap& Stream) const
 {
-	Stream.mStream = new memstream(mContentBytes, mContentLength);
+    Stream.mStream = new memstream(mContentBytes, mContentLength);
 }

@@ -22,10 +22,10 @@ namespace Network
     public:
         void operator=(const HttpFileStreamContent& Content);
             
-	// Public methods            
-	public:
-		std::istream* GetContent();
-		void GetContent(IStreamWrap& Stream) const;
+    // Public methods            
+    public:
+        std::istream* GetContent();
+        void GetContent(IStreamWrap& Stream) const;
     };
 }
 
