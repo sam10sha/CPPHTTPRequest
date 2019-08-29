@@ -16,10 +16,14 @@ namespace Network
         protected:
             HttpContent();
             HttpContent(std::istream* const Content, const size_t ContentLength);
-            //HttpContent(const HttpContent& Content);
+            HttpContent(const HttpContent& Content) = delete;
         // Public destruction
         public:
             virtual ~HttpContent();
+        
+		// Public operator overloads
+		public:
+			void operator=(const HttpContent& Content) = delete;
             
         // Public methods            
         public:

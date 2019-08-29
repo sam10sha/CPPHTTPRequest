@@ -5,6 +5,7 @@
 // Public construction
 Network::HttpRequestMessage::HttpRequestMessage() :
     mDefaultProtocol("http"),
+	mPort(0),
     mBody(NULL)
 {
 	
@@ -13,6 +14,7 @@ Network::HttpRequestMessage::HttpRequestMessage(const std::string& Method, const
     mMethod(Method),
     mURL(URL),
     mDefaultProtocol("http"),
+	mPort(0),
     mBody(NULL)
 {
     DecodeURL();
@@ -22,6 +24,7 @@ Network::HttpRequestMessage::~HttpRequestMessage()
     if(mBody)
     {
         delete mBody;
+		mBody = NULL;
     }
 }
 
@@ -150,26 +153,56 @@ void Network::HttpRequestMessage::SetHeader(const std::string& Key, const std::s
 }
 void Network::HttpRequestMessage::SetByteContent(const HttpByteContent* const Content)
 {
+    if(mBody)
+    {
+        delete mBody;
+		mBody = NULL;
+    }
     mBody = new HttpByteContent(*Content);
 }
 void Network::HttpRequestMessage::SetByteContent(const HttpByteContent& Content)
 {
+    if(mBody)
+    {
+        delete mBody;
+		mBody = NULL;
+    }
     mBody = new HttpByteContent(Content);
 }
 void Network::HttpRequestMessage::SetStringContent(const HttpStringContent* const Content)
 {
+    if(mBody)
+    {
+        delete mBody;
+		mBody = NULL;
+    }
     mBody = new HttpStringContent(*Content);
 }
 void Network::HttpRequestMessage::SetStringContent(const HttpStringContent& Content)
 {
+    if(mBody)
+    {
+        delete mBody;
+		mBody = NULL;
+    }
     mBody = new HttpStringContent(Content);
 }
 void Network::HttpRequestMessage::SetStreamContent(const HttpFileStreamContent* const Content)
 {
+    if(mBody)
+    {
+        delete mBody;
+		mBody = NULL;
+    }
     mBody = new HttpFileStreamContent(*Content);
 }
 void Network::HttpRequestMessage::SetStreamContent(const HttpFileStreamContent& Content)
 {
+    if(mBody)
+    {
+        delete mBody;
+		mBody = NULL;
+    }
     mBody = new HttpFileStreamContent(Content);
 }
 

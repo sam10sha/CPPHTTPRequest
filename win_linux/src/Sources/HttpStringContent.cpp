@@ -31,7 +31,7 @@ Network::HttpStringContent& Network::HttpStringContent::operator=(const HttpStri
 }
 
 
-// Public methods      
+// Public methods
 std::istream* Network::HttpStringContent::GetContent()
 {
     if(mContentStream)
@@ -40,7 +40,7 @@ std::istream* Network::HttpStringContent::GetContent()
     }
     mContentStream = new std::istringstream(mStringContent);
     return mContentStream;
-} 
+}
 void Network::HttpStringContent::GetContent(Network::IStreamWrap& Stream) const
 {
     Stream.mStream = new std::istringstream(mStringContent);

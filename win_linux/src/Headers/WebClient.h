@@ -20,6 +20,8 @@ namespace Network
 	// Public member functions
     public:
         std::string SendRequest(const HttpRequestMessage& RequestMsg) const;
+        void SendRequest_2(const HttpRequestMessage& RequestMsg,
+											HttpResponseMessage& ResponseMsg) const;
         
 	// Private member functions
     private:
@@ -27,7 +29,12 @@ namespace Network
         void MakeRequest_2(boost::asio::ip::tcp::socket& Socket, const HttpRequestMessage& RequestMsg) const;
         void ReceiveResponse(boost::asio::ip::tcp::socket& Socket, HttpResponseMessage& ResponseMsg) const;
         void ReceiveResponse_2(boost::asio::ip::tcp::socket& Socket, std::string& ReceivedResponse) const;
-        std::string ParseResponse(const std::string& ServerResponse) const;
+        void ReceiveResponse_3(boost::asio::ip::tcp::socket& Socket,
+								const HttpRequestMessage& RequestMsg,
+								HttpResponseMessage& ResponseMsg) const;
+		std::string ParseResponse(const std::string& ServerResponse) const;
+		// UNSAFE! CAUTION FOR MEMORY LEAK!
+		void TransferBytesDynamically(std::istream& Stream, char** const StoragePtr) const;
     };
 }
 

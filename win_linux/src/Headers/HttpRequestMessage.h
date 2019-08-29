@@ -38,7 +38,12 @@ namespace Network
     public:
         HttpRequestMessage();
         HttpRequestMessage(const std::string& Method, const std::string& URL);
+		HttpRequestMessage(const HttpRequestMessage& RequestMsg) = delete;
         ~HttpRequestMessage();
+		
+	// Public operator overloads
+	public:
+		void operator=(const HttpRequestMessage& RequestMsg) = delete;
         
     // Public methods
     public:

@@ -2,8 +2,6 @@
 
 set INCLUDE_ORIGINAL=%INCLUDE%
 set INCLUDE=%INCLUDE%;%ProgramFiles%\boost\boost_1_70_0
-set LIB_ORIGINAL=%LIB%
-set LIB=%LIB%;%ProgramFiles%\boost_1_70_0\stage\lib
 if [%1] == [main] (
     call:Main.exe
 ) else if [%1] == [clean] (
@@ -13,8 +11,6 @@ if [%1] == [main] (
 )
 set INCLUDE=%INCLUDE_ORIGINAL%
 set INCLUDE_ORIGINAL=
-set LIB=%LIB_ORIGINAL%
-set LIB_ORIGINAL=
 goto done
 
 
