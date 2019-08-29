@@ -3,7 +3,7 @@ CC                          = g++
 AR                          = ar rcs
 NOLINK                      = -c
 CFLAGS                      = -std=c++11
-WALL                        = -ansi -Wall
+WALL                        = -Wall
 LIBPATH                     = -L/usr/local/lib/boost/ -Llib/
 
 # Directories
