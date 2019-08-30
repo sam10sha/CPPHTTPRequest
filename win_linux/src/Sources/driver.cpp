@@ -82,7 +82,7 @@ void TestStatic_2(int argc, char** argv)
 	char ResponseBuf[ResponseBufLen];
 	std::memset(ResponseBuf, 0, ResponseBufLen);
 
-	Response = itoa(ResponseMsg.GetResponseStatusCode(), ResponseBuf, 10);
+	Response = sprintf(ResponseBuf, "%d", (int)ResponseMsg.GetResponseStatusCode());
 	Response += "\r\n";
 	Response += ResponseMsg.GetStringContentBody();
 	
