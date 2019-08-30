@@ -112,13 +112,33 @@ void Network::WebClient::ReceiveResponse_3(boost::asio::ip::tcp::socket& Socket,
     boost::system::error_code Error;
     // Create response buffer
     boost::asio::streambuf Response;
+    const std::string HeadBodyDelimiter("\r\n\r\n");
+    size_t HeadBodyDelimiterLocation = 0;
     std::string Headers;
     std::string Content;
     
-    boost::asio::read_until(Socket, Response, "\r\n\r\n", Error);
-    Headers = boost::asio::buffer_cast<const char*>(Response.data());
+    // Receive headers
+    boost::asio::read_until(Socket, Response, HeadBodyDelimiter.c_str(), Error);
+    HeadBodyDelimiterLocation = FindStr(boost::asio::buffer_cast<const char*>(Response.data()), Response.size(), HeadBodyDelimiter);
+    if(HeadBodyDelimiterLocation >= 0)
+    {
+        //Headers.copy(boost::asio::buffer_cast<const char*>(Response.data()), HeadBodyDelimiterLocation);
+    }
+    else    // if no delimiter found, assume entire response is header
+    {
+        Headers = boost::asio::buffer_cast<const char*>(Response.data());
+    }
+    // Receive content
     boost::asio::read(Socket, Response, Error);
-    Content = boost::asio::buffer_cast<const char*>(Response.data());
+    if(HeadBodyDelimiterLocation >= 0                                               // if no delimiter found, assume entire response is header
+        && HeadBodyDelimiterLocation + HeadBodyDelimiter.size() < Response.size())  // if delimiter is at the end of the response, leave content blank
+    {
+        /* Content.copy(
+            boost::asio::buffer_cast<const char*>(Response.data()),
+            Response.size() - HeadBodyDelimiterLocation - HeadBodyDelimiter.size(),
+            HeadBodyDelimiterLocation + HeadBodyDelimiter.size()
+        ); */
+    }
     
     std::cout << "WebClient[ReceiveResponse_3]: Headers: " << Headers << std::endl;
     std::cout << "WebClient[ReceiveResponse_3]: Content: " << Content << std::endl;
@@ -143,11 +163,27 @@ std::string Network::WebClient::ParseResponse(const std::string& ServerResponse)
     }
     return Body;
 }
+size_t Network::WebClient::FindStr(const void* const RawData, const size_t RawDataLen, const std::string& StrToFind) const
+{
+    size_t Location = -1;
+    if(StrToFind.empty() == false)
+    {
+        const size_t StrToFindLen = StrToFind.size();
+        for(size_t i = 0; i <= RawDataLen - StrToFindLen && Location < 0; i++)
+        {
+            if(!std::memcmp(((const char*)RawData) + i, StrToFind.c_str(), StrToFindLen))
+            {
+                Location = i;
+            }
+        }
+    }
+    return Location;
+}
 // UNSAFE! CAUTION FOR MEMORY LEAK!
 void Network::WebClient::TransferBytesDynamically(std::istream& Stream, char** const StoragePtr) const
 {
-    const size_t INCREMENT_AMT = 1 << 12; // 4 KB
-    const size_t BUF_STORAGE_INCREMENT_AMT = 10;	// 10 storage pointers
+    const size_t INCREMENT_AMT = 1 << 12;           // 4 KB
+    const size_t BUF_STORAGE_INCREMENT_AMT = 10;    // 10 storage pointers
     char** BufferStoragePtrs = new char*[BUF_STORAGE_INCREMENT_AMT];
     int BufStoragePtrIndex = 0;
     

@@ -33,6 +33,7 @@ namespace Network
                                 const HttpRequestMessage& RequestMsg,
                                 HttpResponseMessage& ResponseMsg) const;
         std::string ParseResponse(const std::string& ServerResponse) const;
+        size_t FindStr(const void* const RawData, const size_t RawDataLen, const std::string& StrToFind) const;
         // UNSAFE! CAUTION FOR MEMORY LEAK!
         void TransferBytesDynamically(std::istream& Stream, char** const StoragePtr) const;
     };
