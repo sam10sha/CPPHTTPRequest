@@ -40,13 +40,14 @@ std::string Network::HttpResponseMessage::GetResponseHeader(const std::string& H
 }
 std::string Network::HttpResponseMessage::GetStringContentBody() const
 {
+    IStreamWrap StreamWrap;
     std::string ResponseContent;
-    size_t ContentLength = mBody->GetContentLength();
-    char* Content = new char[ContentLength];
-    std::memset(Content, 0, ContentLength * sizeof(char));
+    std::ostringstream ResponseContentOutStream;
     
-    ResponseContent = std::string(Content);
-    delete[] Content;
+    mBody->GetContent(StreamWrap);
+    *(StreamWrap.mStream)>>ResponseContentOutStream.rdbuf();
+    ResponseContent = ResponseContentOutStream.str();
+    
     return ResponseContent;
 }
 void Network::HttpResponseMessage::GetStreamContentBody(Network::IStreamWrap& StreamWrap) const
@@ -101,12 +102,15 @@ void Network::HttpResponseMessage::ParseRawHeader(const std::string& Header)
     for(std::vector<std::string>::iterator Line = Lines.begin() + 1; Line < Lines.end(); Line++)
     {
         HeaderLineDelimiterPosition = Line->find_first_of(':');
-        HeaderKey = Line->substr(0, HeaderLineDelimiterPosition);
-        HeaderValue = Line->substr(HeaderLineDelimiterPosition + 1);
-        mHeaders[HeaderKey] = HeaderValue;
+        if(HeaderLineDelimiterPosition != std::string::npos)
+        {
+            HeaderKey = Line->substr(0, HeaderLineDelimiterPosition);
+            HeaderValue = Line->substr(HeaderLineDelimiterPosition + 1);
+            mHeaders[HeaderKey] = HeaderValue;
+        }
     }
     
-    std::cout << "HttpResponseMessage[ParseRawHeader]: Protocol version = " << mProtocolVersion << std::endl;
+    /* std::cout << "HttpResponseMessage[ParseRawHeader]: Protocol version = " << mProtocolVersion << std::endl;
     std::cout << "HttpResponseMessage[ParseRawHeader]: Status code = " << mStatusCode << std::endl;
     std::cout << "HttpResponseMessage[ParseRawHeader]: Status message = " << mStatusMessage << std::endl;
     std::cout << "HttpResponseMessage[ParseRawHeader]: Method = " << mMethod << std::endl;
@@ -122,7 +126,7 @@ void Network::HttpResponseMessage::ParseRawHeader(const std::string& Header)
         Header++)
     {
         std::cout << "HttpResponseMessage[ParseRawHeader]: Header = " << Header->first << ": " << Header->second << std::endl;
-    }
+    } */
 }
 void Network::HttpResponseMessage::SetStringContent(const HttpStringContent* const Content)
 {

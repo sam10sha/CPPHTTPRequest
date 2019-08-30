@@ -67,7 +67,7 @@ std::string Network::HttpRequestMessage::GetRequestHeader(const std::string& Key
     }
     return HeaderValue;
 }
-std::string Network::HttpRequestMessage::GetAllRequestHeaders() const
+std::string Network::HttpRequestMessage::GetRequestHeaderSection() const
 {
     std::string Header;
     Header += GetMethod() + " " + GetQueryPath() + " HTTP/1.1\r\n";
@@ -80,7 +80,7 @@ std::string Network::HttpRequestMessage::GetAllRequestHeaders() const
     }
     return Header;
 }
-std::string Network::HttpRequestMessage::GetRequestBodyString() const
+/* std::string Network::HttpRequestMessage::GetRequestBodyString() const
 {
     const size_t BufSize = 1 << 12; // 4 KB
     std::istream* ContentStream = NULL;
@@ -117,24 +117,10 @@ std::string Network::HttpRequestMessage::GetRequestBodyString() const
         }
     }
     return RequestBody;
-}
+} */
 void Network::HttpRequestMessage::GetRequestBodyStream(Network::IStreamWrap& Stream) const
 {
     mBody->GetContent(Stream);
-}
-std::string Network::HttpRequestMessage::GetRequest() const
-{
-    std::string Request;
-    std::string RequestBody = GetRequestBodyString();
-    
-    Request += GetAllRequestHeaders();
-    Request += "\r\n";
-    if(RequestBody.length() > 0)
-    {
-        Request += RequestBody;
-        Request + "\r\n";
-    }
-    return Request;
 }
 
 

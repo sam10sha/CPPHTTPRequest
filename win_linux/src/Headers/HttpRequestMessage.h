@@ -54,10 +54,9 @@ namespace Network
         long GetPort() const;
         std::string GetQueryPath() const;
         std::string GetRequestHeader(const std::string& Key) const;
-        std::string GetAllRequestHeaders() const;
-        std::string GetRequestBodyString() const;
+        std::string GetRequestHeaderSection() const;
+        //std::string GetRequestBodyString() const;
         void GetRequestBodyStream(IStreamWrap& Stream) const;
-        std::string GetRequest() const;
         
         void SetMethod(const std::string& Method);
         void SetURL(const std::string& URL);
