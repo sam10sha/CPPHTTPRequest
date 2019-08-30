@@ -8,11 +8,11 @@ for %%a in (%2\*.obj) do (
     dumpbin /out:%2\%%~na.exp /symbols %%a
     for /f %%b in (%1) do (
         for /f "tokens=6,8" %%c in ('findstr "%%b" %2\%%~na.exp') do (
-			if [%%c] == [External] (
-				findstr "%%d" %3 > nul || (
-					echo %%d >> %3
-				)
-			)
+            if [%%c] == [External] (
+                findstr "%%d" %3 > nul || (
+                    echo %%d >> %3
+                )
+            )
         )
     )
     del %2\%%~na.exp
