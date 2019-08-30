@@ -42,10 +42,13 @@ void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const
 	
     // Send request content
     RequestMsg.GetRequestBodyStream(StreamWrap);
-    std::istream& Stream = *StreamWrap.mStream;
-    RequestStream << Stream.rdbuf();
-    RequestStream << RequestDelimiter;
-    boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
+	if(StreamWrap.mStream)
+	{
+		std::istream& Stream = *StreamWrap.mStream;
+		RequestStream << Stream.rdbuf();
+		RequestStream << RequestDelimiter;
+		boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
+	}
 }
 void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket,
                                             const Network::HttpRequestMessage& RequestMsg,

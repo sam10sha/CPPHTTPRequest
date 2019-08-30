@@ -1,7 +1,7 @@
 @echo off
 
 set INCLUDE_ORIGINAL=%INCLUDE%
-set INCLUDE=%INCLUDE%;%ProgramFiles%\boost\boost_1_70_0
+set INCLUDE=%INCLUDE%;%ProgramFiles(x86)%\boost\boost_1_70_0
 if [%1] == [main] (
     call:Main.exe
 ) else if [%1] == [clean] (

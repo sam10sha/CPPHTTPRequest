@@ -10,11 +10,13 @@ using std::endl;
 
 void TestDynamic(int argc, char** argv);
 void TestStatic(int argc, char** argv);
+void TestStatic_2(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
     //TestDynamic(argc, argv);
-    TestStatic(argc, argv);
+    //TestStatic(argc, argv);
+    TestStatic_2(argc, argv);
     return 0;
 }
 
@@ -59,6 +61,29 @@ void TestStatic(int argc, char** argv)
 	Client.SendRequest(RequestMsg, ResponseMsg);
 	std::string Response;
 	Response = std::to_string(ResponseMsg.GetResponseStatusCode()) + "\n";
+	Response += ResponseMsg.GetStringContentBody();
+	
+	std::ofstream output("output.txt", std::ofstream::out | std::ofstream::trunc);
+	output.write(Response.c_str(), (std::streamsize)Response.length());
+	output.close();
+}
+void TestStatic_2(int argc, char** argv)
+{
+	Network::HttpRequestMessage RequestMsg("GET", "http://update.amadasoftware.com/ems/v76/ws/productKey/68269595-31d5-4a5e-8732-78034a0ea2a4/licenseretrieval.ws");
+	Network::HttpResponseMessage ResponseMsg;
+	
+	Network::WebClient Client;
+	Client.SendRequest(RequestMsg, ResponseMsg);
+
+
+	// Writing output to file
+	const size_t ResponseBufLen = 16;
+	std::string Response;
+	char ResponseBuf[ResponseBufLen];
+	std::memset(ResponseBuf, 0, ResponseBufLen);
+
+	Response = itoa(ResponseMsg.GetResponseStatusCode(), ResponseBuf, 10);
+	Response += "\r\n";
 	Response += ResponseMsg.GetStringContentBody();
 	
 	std::ofstream output("output.txt", std::ofstream::out | std::ofstream::trunc);

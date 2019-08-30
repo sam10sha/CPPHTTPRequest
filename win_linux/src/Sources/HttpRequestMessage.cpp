@@ -120,7 +120,10 @@ std::string Network::HttpRequestMessage::GetRequestHeaderSection() const
 } */
 void Network::HttpRequestMessage::GetRequestBodyStream(Network::IStreamWrap& Stream) const
 {
-    mBody->GetContent(Stream);
+	if(mBody)
+	{
+        mBody->GetContent(Stream);
+	}
 }
 
 
