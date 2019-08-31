@@ -165,5 +165,6 @@ void Network::HttpResponseMessage::ParseResponseHeaderStatusLine(const std::stri
     }
     
     // Parse status code
-    mStatusCode = std::stol(StrStatusCode, NULL, 10);
+	std::stringstream StatusCodeStream(StrStatusCode);
+	StatusCodeStream >> mStatusCode;
 }
