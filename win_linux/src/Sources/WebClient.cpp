@@ -10,6 +10,8 @@ Network::WebClient::WebClient()
 void Network::WebClient::SendRequest(const Network::HttpRequestMessage& RequestMsg,
                                         Network::HttpResponseMessage& ResponseMsg) const
 {
+	boost::system::error_code ErrorCode;
+	
     boost::asio::io_service IOService;
     boost::asio::ip::tcp::socket Socket(IOService);
     boost::asio::ip::tcp::endpoint EndPoint(
@@ -20,6 +22,8 @@ void Network::WebClient::SendRequest(const Network::HttpRequestMessage& RequestM
     Socket.connect(EndPoint);
     MakeRequest(Socket, RequestMsg);
     ReceiveResponse(Socket, RequestMsg, ResponseMsg);
+	
+	Socket.close(ErrorCode);
 }
 
 

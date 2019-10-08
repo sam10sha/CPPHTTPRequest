@@ -72,16 +72,18 @@ void TestStatic_2(int argc, char** argv)
 	Network::HttpRequestMessage RequestMsg("GET", "http://update.amadasoftware.com/ems/v76/ws/productKey/68269595-31d5-4a5e-8732-78034a0ea2a4/licenseretrieval.ws");
 	Network::HttpResponseMessage ResponseMsg;
 	
+	RequestMsg.SetHeader(std::string("Connection"), std::string("Close"));
+	
 	Network::WebClient Client;
 	Client.SendRequest(RequestMsg, ResponseMsg);
-
-
+    
+    
 	// Writing output to file
 	const size_t ResponseBufLen = 16;
 	std::string Response;
 	char ResponseBuf[ResponseBufLen];
 	std::memset(ResponseBuf, 0, ResponseBufLen);
-
+	
 	Response = sprintf(ResponseBuf, "%d", (int)ResponseMsg.GetResponseStatusCode());
 	Response += "\r\n";
 	Response += ResponseMsg.GetStringContentBody();
