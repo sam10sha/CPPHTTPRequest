@@ -14,8 +14,8 @@ namespace Network
 {
     class HttpRequestMessage
     {
-    // Private structures
-    private:
+    // Public structures
+    public:
         struct IPEndPoint
         {
             std::string mIPAddr;
@@ -50,7 +50,8 @@ namespace Network
         std::string GetURL() const;
         std::string GetProtocol() const;
         std::string GetServerHostName() const;
-        std::string GetServerIPAddress() const;
+        const std::vector<IPEndPoint>& GetRemoteServerIPEndPts();
+        std::string GetServerIPAddr() const;
         long GetPort() const;
         std::string GetQueryPath() const;
         std::string GetRequestHeader(const std::string& Key) const;
@@ -60,6 +61,10 @@ namespace Network
         
         void SetMethod(const std::string& Method);
         void SetURL(const std::string& URL);
+        void AddRemoteServerEndPt(IPEndPoint IPEndPt);
+        void SetRemoteServerIPAddr(const std::string& IPAddr);
+        void SetRemoteServerPort(const long Port);
+        
         void SetHeader(const std::string& Key, const std::string& Value);
         void SetByteContent(const HttpByteContent* const Content);
         void SetByteContent(const HttpByteContent& Content);
@@ -71,8 +76,6 @@ namespace Network
     // Private methods
     private:
         void DecodeURL();
-        void SetRemoteServerIPAddr();
-        bool ResolveIPAddrs(std::vector<IPEndPoint>& IPAddrs);
         
         
     // Private instance variables
@@ -82,8 +85,9 @@ namespace Network
         std::string mDefaultProtocol;
         std::string mProtocol;
         std::string mServerHostName;
-        std::string mServerIPAddress;
-        long mPort;
+        std::vector<IPEndPoint> mServerIPEndPts;
+        std::string mServerIPAddr;
+        long mServerPort;
         std::string mQueryPath;
         std::map<const std::string, std::string> mHeaders;
         HttpContent* mBody;

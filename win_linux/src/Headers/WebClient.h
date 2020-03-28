@@ -19,11 +19,13 @@ namespace Network
         
     // Public member functions
     public:
-        void SendRequest(const HttpRequestMessage& RequestMsg,
+        void SendRequest(HttpRequestMessage& RequestMsg,
                             HttpResponseMessage& ResponseMsg) const;
         
     // Private member functions
     private:
+        bool ConnectToRemoteServer(HttpRequestMessage& RequestMsg, boost::asio::io_service& IOService, boost::asio::ip::tcp::socket& Socket) const;
+        bool ResolveIPAddrs(HttpRequestMessage& RequestMsg, boost::asio::io_service& IOService) const;
         void MakeRequest(boost::asio::ip::tcp::socket& Socket, const HttpRequestMessage& RequestMsg) const;
         void ReceiveResponse(boost::asio::ip::tcp::socket& Socket,
                                 const HttpRequestMessage& RequestMsg,

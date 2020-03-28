@@ -15,8 +15,8 @@ void TestStatic_2(int argc, char** argv);
 int main(int argc, char** argv)
 {
     //TestDynamic(argc, argv);
-    //TestStatic(argc, argv);
-    TestStatic_2(argc, argv);
+    TestStatic(argc, argv);
+    //TestStatic_2(argc, argv);
     return 0;
 }
 

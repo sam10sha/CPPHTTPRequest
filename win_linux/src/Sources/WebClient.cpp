@@ -7,29 +7,82 @@ Network::WebClient::WebClient()
 
 
 // Public member functions
-void Network::WebClient::SendRequest(const Network::HttpRequestMessage& RequestMsg,
+void Network::WebClient::SendRequest(Network::HttpRequestMessage& RequestMsg,
                                         Network::HttpResponseMessage& ResponseMsg) const
 {
-	boost::system::error_code ErrorCode;
+    bool ConnectionSuccess = false;
+    boost::system::error_code ErrorCode;
 	
     boost::asio::io_service IOService;
     boost::asio::ip::tcp::socket Socket(IOService);
-    boost::asio::ip::tcp::endpoint EndPoint(
-        boost::asio::ip::address::from_string(RequestMsg.GetServerIPAddress().c_str()),
-        (int)RequestMsg.GetPort()
-    );
     
-    Socket.connect(EndPoint);
-    MakeRequest(Socket, RequestMsg);
-    ReceiveResponse(Socket, RequestMsg, ResponseMsg);
-	
-	Socket.close(ErrorCode);
+    ConnectionSuccess = ConnectToRemoteServer(RequestMsg, IOService, Socket);
+    if(ConnectionSuccess)
+    {
+        MakeRequest(Socket, RequestMsg);
+        ReceiveResponse(Socket, RequestMsg, ResponseMsg);
+        
+        Socket.close(ErrorCode);
+    }
 }
 
 
 
 
 // Private member functions
+bool Network::WebClient::ConnectToRemoteServer(HttpRequestMessage& RequestMsg, boost::asio::io_service& IOService, boost::asio::ip::tcp::socket& Socket) const
+{
+    bool IPAddrsResolved = false;
+    bool ConnectionSuccess = false;
+    IPAddrsResolved = ResolveIPAddrs(RequestMsg, IOService);
+    if(IPAddrsResolved)
+    {
+        const std::vector<HttpRequestMessage::IPEndPoint>& RemoteServerIPEndPts = RequestMsg.GetRemoteServerIPEndPts();
+        for(std::vector<HttpRequestMessage::IPEndPoint>::const_iterator IPEndPt = RemoteServerIPEndPts.begin();
+            !ConnectionSuccess && IPEndPt != RemoteServerIPEndPts.end();
+            IPEndPt++)
+        {
+            boost::asio::ip::tcp::endpoint EndPoint(
+                boost::asio::ip::address::from_string(IPEndPt->mIPAddr.c_str()),
+                (int)IPEndPt->mPort
+            );
+            try
+            {
+                Socket.connect(EndPoint);
+                RequestMsg.SetRemoteServerIPAddr(IPEndPt->mIPAddr);
+                RequestMsg.SetRemoteServerPort(IPEndPt->mPort);
+                ConnectionSuccess = true;
+            }
+            catch(boost::system::system_error error) { }
+        }
+    }
+    return ConnectionSuccess;
+}
+bool Network::WebClient::ResolveIPAddrs(HttpRequestMessage& RequestMsg, boost::asio::io_service& IOService) const
+{
+    bool IPAddrsResolved = false;
+    long RequestedPort = RequestMsg.GetPort();
+    boost::asio::ip::tcp::resolver Resolver(IOService);
+    boost::asio::ip::tcp::resolver::query Query(RequestMsg.GetServerHostName(), RequestMsg.GetProtocol());
+    try
+    {
+        for(boost::asio::ip::tcp::resolver::iterator Iterator = Resolver.resolve(Query);
+            Iterator != boost::asio::ip::tcp::resolver::iterator();
+            Iterator++)
+        {
+            boost::asio::ip::tcp::endpoint EndPt = *Iterator;
+            RequestMsg.AddRemoteServerEndPt(
+                HttpRequestMessage::IPEndPoint(
+                    EndPt.address().to_string(),
+                    RequestedPort < 0 ? EndPt.port() : RequestedPort
+                )
+            );
+        }
+        IPAddrsResolved = true;
+    }
+    catch(int error) { }
+    return IPAddrsResolved;
+}
 void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const HttpRequestMessage& RequestMsg) const
 {
     IStreamWrap StreamWrap;
@@ -46,13 +99,13 @@ void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const
 	
     // Send request content
     RequestMsg.GetRequestBodyStream(StreamWrap);
-	if(StreamWrap.mStream)
-	{
-		std::istream& Stream = *StreamWrap.mStream;
-		RequestStream << Stream.rdbuf();
-		RequestStream << RequestDelimiter;
-		boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
-	}
+    if(StreamWrap.mStream)
+    {
+        std::istream& Stream = *StreamWrap.mStream;
+        RequestStream << Stream.rdbuf();
+        RequestStream << RequestDelimiter;
+        boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
+    }
 }
 void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket,
                                             const Network::HttpRequestMessage& RequestMsg,
@@ -92,7 +145,7 @@ void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket,
     ResponseMsg.SetMethod(RequestMsg.GetMethod());
     ResponseMsg.SetURL(RequestMsg.GetURL());
     ResponseMsg.SetServerHostName(RequestMsg.GetServerHostName());
-    ResponseMsg.SetServerIPAddr(RequestMsg.GetServerIPAddress());
+    ResponseMsg.SetServerIPAddr(RequestMsg.GetServerIPAddr());
     ResponseMsg.SetPort(RequestMsg.GetPort());
     ResponseMsg.SetQueryPath(RequestMsg.GetQueryPath());
     ResponseMsg.ParseRawHeader(Headers);

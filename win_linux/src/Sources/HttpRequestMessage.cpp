@@ -5,7 +5,7 @@
 // Public construction
 Network::HttpRequestMessage::HttpRequestMessage() :
     mDefaultProtocol("http"),
-	mPort(0),
+    mServerPort(-1),
     mBody(NULL)
 {
 	
@@ -14,7 +14,7 @@ Network::HttpRequestMessage::HttpRequestMessage(const std::string& Method, const
     mMethod(Method),
     mURL(URL),
     mDefaultProtocol("http"),
-	mPort(0),
+    mServerPort(-1),
     mBody(NULL)
 {
     DecodeURL();
@@ -45,13 +45,17 @@ std::string Network::HttpRequestMessage::GetServerHostName() const
 {
     return mServerHostName;
 }
-std::string Network::HttpRequestMessage::GetServerIPAddress() const
+const std::vector<Network::HttpRequestMessage::IPEndPoint>& Network::HttpRequestMessage::GetRemoteServerIPEndPts()
 {
-    return mServerIPAddress;
+    return mServerIPEndPts;
+}
+std::string Network::HttpRequestMessage::GetServerIPAddr() const
+{
+    return mServerIPAddr;
 }
 long Network::HttpRequestMessage::GetPort() const
 {
-    return mPort;
+    return mServerPort;
 }
 std::string Network::HttpRequestMessage::GetQueryPath() const
 {
@@ -120,10 +124,10 @@ std::string Network::HttpRequestMessage::GetRequestHeaderSection() const
 } */
 void Network::HttpRequestMessage::GetRequestBodyStream(Network::IStreamWrap& Stream) const
 {
-	if(mBody)
-	{
+    if(mBody)
+    {
         mBody->GetContent(Stream);
-	}
+    }
 }
 
 
@@ -135,6 +139,30 @@ void Network::HttpRequestMessage::SetURL(const std::string& URL)
 {
     mURL = URL;
     DecodeURL();
+}
+void Network::HttpRequestMessage::AddRemoteServerEndPt(IPEndPoint IPEndPt)
+{
+    mServerIPEndPts.push_back(IPEndPt);
+    
+    /* std::vector<IPEndPoint> IPAddrs;
+    ResolveIPAddrs(IPAddrs);
+    if(IPAddrs.size() > 0)
+    {
+        IPEndPoint& SelectedEndPoint = IPAddrs.back();
+        mServerIPAddress = SelectedEndPoint.mIPAddr;
+        if(mServerPort < 0)
+        {
+            mServerPort = SelectedEndPoint.mServerPort;
+        }
+    } */
+}
+void Network::HttpRequestMessage::SetRemoteServerIPAddr(const std::string& IPAddr)
+{
+    mServerIPAddr = IPAddr;
+}
+void Network::HttpRequestMessage::SetRemoteServerPort(const long Port)
+{
+    mServerPort = Port;
 }
 void Network::HttpRequestMessage::SetHeader(const std::string& Key, const std::string& Value)
 {
@@ -236,53 +264,14 @@ void Network::HttpRequestMessage::DecodeURL()
     {
         mServerHostName = URLCopy.substr(0, DelimiterIndex);
         URLCopy = URLCopy.substr(DelimiterIndex + PortDelimiter.size());
-        mPort = strtol(URLCopy.c_str(), NULL, 10);
+        mServerPort = strtol(URLCopy.c_str(), NULL, 10);
     }
     else
     {
         mServerHostName = URLCopy;
-        mPort = -1;
+        mServerPort = -1;
     }
-    SetRemoteServerIPAddr();
-}
-void Network::HttpRequestMessage::SetRemoteServerIPAddr()
-{
-    std::vector<IPEndPoint> IPAddrs;
-    ResolveIPAddrs(IPAddrs);
-    if(IPAddrs.size() > 0)
-    {
-        IPEndPoint& SelectedEndPoint = IPAddrs.back();
-        mServerIPAddress = SelectedEndPoint.mIPAddr;
-        if(mPort < 0)
-        {
-            mPort = SelectedEndPoint.mPort;
-        }
-    }
-}
-bool Network::HttpRequestMessage::ResolveIPAddrs(std::vector<Network::HttpRequestMessage::IPEndPoint>& IPAddrs)
-{
-    bool IPAddrsResolved = false;
-    boost::asio::io_service IOService;
-    boost::asio::ip::tcp::resolver Resolver(IOService);
-    boost::asio::ip::tcp::resolver::query Query(mServerHostName, mProtocol);
-    try
-    {
-        for(boost::asio::ip::tcp::resolver::iterator Iterator = Resolver.resolve(Query);
-            Iterator != boost::asio::ip::tcp::resolver::iterator();
-            Iterator++)
-        {
-            boost::asio::ip::tcp::endpoint EndPt = *Iterator;
-            IPAddrs.push_back(
-                IPEndPoint(
-                    EndPt.address().to_string(),
-                    EndPt.port()
-                )
-            );
-        }
-        IPAddrsResolved = true;
-    }
-    catch(int error) { }
-    return IPAddrsResolved;
+    //SetRemoteServerIPAddr();
 }
 
 
