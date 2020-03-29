@@ -4,7 +4,6 @@ AR                          = ar rcs
 RANLIB                      = ranlib
 NOLINK                      = -c
 CFLAGS                      = -std=c++11 -Wall
-LIBPATH                     = -L/usr/local/lib/boost/ -Llib/
 
 # Directories
 SRC_DIR                     = src/Sources
@@ -46,7 +45,7 @@ main: $(MAIN)
 
 # Executables
 $(MAIN): $(DRIVER_O) $(NETWORK_A) | $(BIN_DIR)
-	$(CC) $(LIBPATH) $^ -lpthread -o $@
+	$(CC) -L/usr/local/lib/boost/ $^ -lpthread -lcrypto -lssl -o $@
 
 # Libraries
 $(NETWORK_A): $(HTTPCONTENT_O) $(HTTPBYTECONTENT_O) $(HTTPFILESTREAMCONTENT_O) $(HTTPSTRINGCONTENT_O) $(HTTPREQUESTMESSAGE_O) $(HTTPRESPONSEMESSAGE_O) $(WEBCLIENT_O) | $(LIB_DIR)

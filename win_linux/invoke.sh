@@ -1,1 +1,1 @@
-bin/main POST http://update.amadasoftware.com/customerdataportal/api/test
+bin/main GET http://www.howsmyssl.com/a/check

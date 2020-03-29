@@ -14,8 +14,8 @@ void TestStatic_2(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
-    //TestDynamic(argc, argv);
-    TestStatic(argc, argv);
+    TestDynamic(argc, argv);
+    //TestStatic(argc, argv);
     //TestStatic_2(argc, argv);
     return 0;
 }
@@ -23,11 +23,11 @@ int main(int argc, char** argv)
 
 void TestDynamic(int argc, char** argv)
 {
-	if(argc >= 3)
+    if(argc >= 3)
     {
         //Network::HttpRequestMessage RequestMsg("GET", "http://update.amadasoftware.com/customerdataportal/api/test");
         Network::HttpRequestMessage RequestMsg(argv[1], argv[2]);
-	Network::HttpResponseMessage ResponseMsg;
+        Network::HttpResponseMessage ResponseMsg;
         RequestMsg.SetHeader("Content-Type", "text/plain");
         RequestMsg.SetHeader("Content-Length", "11");
         RequestMsg.SetHeader("Connection", "close");
@@ -49,7 +49,9 @@ void TestDynamic(int argc, char** argv)
 }
 void TestStatic(int argc, char** argv)
 {
-	Network::HttpRequestMessage RequestMsg("POST", "http://httpbin.org/post");
+	//Network::HttpRequestMessage RequestMsg("POST", "http://httpbin.org/post");
+        //Network::HttpRequestMessage RequestMsg("POST", "https://swdownload.amada.comldkjfdl/fileservice/newsoftware");
+        Network::HttpRequestMessage RequestMsg("POST", "http://swdownload.amada.com/fileservice/newsoftware");
 	Network::HttpResponseMessage ResponseMsg;
 	RequestMsg.SetHeader("Content-Type", "text/plain");
 	RequestMsg.SetHeader("Content-Length", "11");
