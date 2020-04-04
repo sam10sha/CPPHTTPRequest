@@ -29,10 +29,10 @@ void TestDynamic(int argc, char** argv)
         Network::HttpRequestMessage RequestMsg(argv[1], argv[2]);
         Network::HttpResponseMessage ResponseMsg;
         RequestMsg.SetHeader("Content-Type", "text/plain");
-        RequestMsg.SetHeader("Content-Length", "11");
+        //RequestMsg.SetHeader("Content-Length", "11");
         RequestMsg.SetHeader("Connection", "close");
         RequestMsg.SetHeader("Accept", "*/*");
-        RequestMsg.SetByteContent(Network::HttpByteContent("Hello world", 12));
+        //RequestMsg.SetByteContent(Network::HttpByteContent("Hello world", 12));
         
         //cout << RequestMsg.GetRequest() << endl;
         
@@ -40,7 +40,11 @@ void TestDynamic(int argc, char** argv)
         Client.SendRequest(RequestMsg, ResponseMsg);
         std::string Response = ResponseMsg.GetStringContentBody();
         
-        std::cout << Response << std::endl;
+        cout << "driver[TestDynamic]: Response code: " << ResponseMsg.GetResponseStatusCode() << endl;
+	
+	std::ofstream output("output.txt", std::ofstream::out | std::ofstream::trunc);
+	output.write(Response.c_str(), (std::streamsize)Response.length());
+	output.close();
     }
     else
     {

@@ -130,16 +130,11 @@ void Network::WebClient::SendHTTPSRequest(HttpRequestMessage& RequestMsg, HttpRe
     ConnectionSuccess = ConnectToRemoteServer(RequestMsg, IOService, (boost::asio::ip::tcp::socket&)SSLSocket.lowest_layer());
     if(ConnectionSuccess)
     {
-        std::cout << "Connection success" << std::endl;
-        std::cout << RequestMsg.GetServerIPAddr() << std::endl;
-        std::cout << RequestMsg.GetPort() << std::endl;
-        
+        //SSLSocket.lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
         HandshakeSuccess = SSLHandshake(RequestMsg, SSLSocket);
     }
     if(HandshakeSuccess)
     {
-        std::cout << "Handshake success" << std::endl;
-        
         MakeSSLRequest(SSLSocket, RequestMsg);
         ReceiveSSLResponse(SSLSocket, RequestMsg, ResponseMsg);
         
@@ -154,8 +149,7 @@ void Network::WebClient::MakeSSLRequest(boost::asio::ssl::stream<boost::asio::ip
     // Create request
     boost::asio::streambuf Request;
     std::ostream RequestStream(&Request);
-	
-	
+        
     // Send request header
     RequestStream << RequestMsg.GetRequestHeaderSection();
     RequestStream << RequestDelimiter;
@@ -253,22 +247,29 @@ bool Network::WebClient::ConnectToRemoteServer(HttpRequestMessage& RequestMsg, b
     if(IPAddrsResolved)
     {
         const std::vector<HttpRequestMessage::IPEndPoint>& RemoteServerIPEndPts = RequestMsg.GetRemoteServerIPEndPts();
+        std::vector<boost::asio::ip::tcp::endpoint> BoostEndPts;
         for(std::vector<HttpRequestMessage::IPEndPoint>::const_iterator IPEndPt = RemoteServerIPEndPts.begin();
             !ConnectionSuccess && IPEndPt != RemoteServerIPEndPts.end();
             IPEndPt++)
         {
+            /* std::cout << "WebClient[ConnectToRemoteServer]: " << "IP: " << IPEndPt->mIPAddr << std::endl;
+            std::cout << "WebClient[ConnectToRemoteServer]: " << "Port: " << IPEndPt->mPort << std::endl; */
             boost::asio::ip::tcp::endpoint EndPoint(
                 boost::asio::ip::address::from_string(IPEndPt->mIPAddr.c_str()),
                 (int)IPEndPt->mPort
             );
-            try
-            {
-                Socket.connect(EndPoint);
-                RequestMsg.SetRemoteServerIPAddr(IPEndPt->mIPAddr);
-                RequestMsg.SetRemoteServerPort(IPEndPt->mPort);
-                ConnectionSuccess = true;
-            }
-            catch(boost::system::system_error error) { }
+            BoostEndPts.push_back(EndPoint);
+        }
+        try
+        {
+            boost::asio::connect(Socket, BoostEndPts.begin());
+            RequestMsg.SetRemoteServerIPAddr(Socket.remote_endpoint().address().to_string());
+            RequestMsg.SetRemoteServerPort(Socket.remote_endpoint().port());
+            ConnectionSuccess = true;
+        }
+        catch(std::exception& e)
+        {
+            std::cout << "WebClient[ConnectToRemoteServer]: " << e.what() << std::endl;
         }
     }
     return ConnectionSuccess;
@@ -279,7 +280,7 @@ bool Network::WebClient::SSLHandshake(const HttpRequestMessage& RequestMsg, boos
     namespace ssl = boost::asio::ssl;
     
     // Perform SSL handshake and verify the remote host's certificate.
-    //socket.set_verify_mode(ssl::verify_peer);
+    //SSLSocket.set_verify_mode(ssl::verify_peer);
     SSLSocket.set_verify_mode(ssl::verify_none);
     SSLSocket.set_verify_callback(ssl::rfc2818_verification(RequestMsg.GetServerHostName()));
     try
@@ -287,7 +288,10 @@ bool Network::WebClient::SSLHandshake(const HttpRequestMessage& RequestMsg, boos
         SSLSocket.handshake(ssl::stream<boost::asio::ip::tcp::socket>::client);
         HandshakeSuccess = true;
     }
-    catch(std::exception& e) { }
+    catch(std::exception& e)
+    {
+        std::cout << "WebClient[SSLHandshake]: " << e.what() << std::endl;
+    }
     return HandshakeSuccess;
 }
 int Network::WebClient::FindStr(const void* const RawData, const size_t RawDataLen, const std::string& StrToFind) const
