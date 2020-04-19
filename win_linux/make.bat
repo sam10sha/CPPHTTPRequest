@@ -1,7 +1,7 @@
 @echo off
 
 set INCLUDE_ORIGINAL=%INCLUDE%
-set INCLUDE=%INCLUDE%;%ProgramFiles(x86)%\boost\boost_1_70_0
+set INCLUDE=%INCLUDE%;%ProgramFiles%\boost\boost_1_72_0
 if [%1] == [main] (
     call:Main.exe
 ) else if [%1] == [clean] (
@@ -22,7 +22,7 @@ call:bin
 if not exist bin\Main.exe (
 	call:Main_exe_obj
 	call:Main_exe_lib
-	link /machine:x64 /libpath:%cd%\resources\boost_1_70_0\lib\x64 /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
+	link /machine:x64 /libpath:"%cd%\resources\boost_1_70_0\lib\x64" /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
 )
 set obj_dependency_list=
 set lib_dependency_list=
@@ -32,7 +32,7 @@ set src_dependency_list=src\Sources\driver.cpp
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-	    cl /c /EHsc /Od /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+	    cl /c /EHsc /Od /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
 	)
 )
 set src_dependency_list=
@@ -73,7 +73,7 @@ set src_dependency_list=src\Sources\HttpByteContent.cpp^
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-	    cl /c /EHsc /Od /I%cd%\src\Headers /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+	    cl /c /EHsc /Od /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
 	)
 )
 set src_dependency_list=
