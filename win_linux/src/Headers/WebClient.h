@@ -1,6 +1,7 @@
 #ifndef WEBCLIENT_H
 #define WEBCLIENT_H
 
+#include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <string>
 #include "HttpRequestMessage.h"
