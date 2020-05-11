@@ -1,7 +1,7 @@
 @echo off
 
 set INCLUDE_ORIGINAL=%INCLUDE%
-set INCLUDE=%INCLUDE%;%ProgramFiles%\boost\boost_1_72_0
+set INCLUDE=%INCLUDE%;%ProgramFiles%\boost\boost_1_72_0;%ProgramFiles%\openssl\openssl-1.1.1g\include
 if [%1] == [main] (
     call:Main.exe
 ) else if [%1] == [clean] (
@@ -33,7 +33,7 @@ set src_dependency_list=src\Sources\driver.cpp
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-        cl /c /EHsc /Od /I"%ProgramFiles%\openssl\openssl-1.1.1g\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+        cl /c /EHsc /Od /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
     )
 )
 set src_dependency_list=
@@ -74,7 +74,7 @@ set src_dependency_list=src\Sources\HttpByteContent.cpp^
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-        cl /c /EHsc /Od /I"%ProgramFiles%\openssl\openssl-1.1.1g\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+        cl /c /EHsc /Od /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
     )
 )
 set src_dependency_list=
