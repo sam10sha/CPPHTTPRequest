@@ -17,12 +17,13 @@ goto done
 ::EXECUTABLES
 :Main.exe
 set obj_dependency_list=obj\driver.obj
-set lib_dependency_list=lib\Network.lib
+set lib_dependency_list=lib\Network.lib libcrypto.lib libssl.lib
 call:bin
 if not exist bin\Main.exe (
-	call:Main_exe_obj
-	call:Main_exe_lib
-	link /machine:x64 /libpath:"%cd%\resources\boost_1_70_0\lib\x64" /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
+    call:Main_exe_obj
+    call:Main_exe_lib
+    link /machine:x64 /libpath:"%cd%\resources\win\boost_1_72_0\lib\x64\static" /libpath:"%cd%\resources\win\openssl\lib" /out:bin\Main.exe %obj_dependency_list% %lib_dependency_list%
+    copy "%cd%\resources\win\openssl\lib\*.dll" .\bin
 )
 set obj_dependency_list=
 set lib_dependency_list=
@@ -32,8 +33,8 @@ set src_dependency_list=src\Sources\driver.cpp
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-	    cl /c /EHsc /Od /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
-	)
+        cl /c /EHsc /Od /I"%cd%\resources\win\openssl\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+    )
 )
 set src_dependency_list=
 goto:eof
@@ -59,7 +60,7 @@ set obj_dependency_list=obj\HttpByteContent.obj^
 call:lib
 if not exist lib\Network.lib (
     call:Network_lib_obj
-	lib /out:lib\Network.lib %obj_dependency_list%
+    lib /out:lib\Network.lib %obj_dependency_list%
 )
 goto:eof
 :Network_lib_obj
@@ -73,8 +74,8 @@ set src_dependency_list=src\Sources\HttpByteContent.cpp^
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-	    cl /c /EHsc /Od /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
-	)
+        cl /c /EHsc /Od /I"%cd%\resources\win\openssl\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+    )
 )
 set src_dependency_list=
 goto:eof
@@ -90,7 +91,7 @@ if not exist bin (
 goto:eof
 :lib
 if not exist lib (
-	md lib
+    md lib
 )
 goto:eof
 :obj
@@ -107,8 +108,8 @@ goto:eof
 set del_list=bin lib obj
 for %%i in (%del_list%) do (
     if exist %%i (
-	    del /q %%i\*
-	)
+        del /q %%i\*
+    )
 )
 set del_list=
 goto:eof

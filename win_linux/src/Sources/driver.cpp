@@ -14,8 +14,8 @@ void TestStatic_2(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
-    TestDynamic(argc, argv);
-    //TestStatic(argc, argv);
+    //TestDynamic(argc, argv);
+    TestStatic(argc, argv);
     //TestStatic_2(argc, argv);
     return 0;
 }
@@ -54,14 +54,14 @@ void TestDynamic(int argc, char** argv)
 void TestStatic(int argc, char** argv)
 {
 	//Network::HttpRequestMessage RequestMsg("POST", "http://httpbin.org/post");
-        //Network::HttpRequestMessage RequestMsg("POST", "https://swdownload.amada.comldkjfdl/fileservice/newsoftware");
-        Network::HttpRequestMessage RequestMsg("POST", "http://swdownload.amada.com/fileservice/newsoftware");
+    //Network::HttpRequestMessage RequestMsg("POST", "https://swdownload.amada.comldkjfdl/fileservice/newsoftware");
+    Network::HttpRequestMessage RequestMsg("GET", "https://www.google.com/");
 	Network::HttpResponseMessage ResponseMsg;
-	RequestMsg.SetHeader("Content-Type", "text/plain");
-	RequestMsg.SetHeader("Content-Length", "11");
+	/* RequestMsg.SetHeader("Content-Type", "text/plain");
+	RequestMsg.SetHeader("Content-Length", "11"); */
 	RequestMsg.SetHeader("Connection", "close");
 	RequestMsg.SetHeader("Accept", "*/*");
-	RequestMsg.SetStringContent(Network::HttpStringContent(std::string("Hello world")));
+	//RequestMsg.SetStringContent(Network::HttpStringContent(std::string("Hello world")));
 	
 	Network::WebClient Client;
 	Client.SendRequest(RequestMsg, ResponseMsg);
