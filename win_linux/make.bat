@@ -33,7 +33,7 @@ set src_dependency_list=src\Sources\driver.cpp
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-        cl /c /EHsc /Od /I"%cd%\resources\win\openssl\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+        cl /c /EHsc /Od /I"%ProgramFiles%\openssl\openssl-1.1.1g\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
     )
 )
 set src_dependency_list=
@@ -74,7 +74,7 @@ set src_dependency_list=src\Sources\HttpByteContent.cpp^
 call:obj
 for %%i in (%src_dependency_list%) do (
     if not exist obj\%%~ni.obj (
-        cl /c /EHsc /Od /I"%cd%\resources\win\openssl\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
+        cl /c /EHsc /Od /I"%ProgramFiles%\openssl\openssl-1.1.1g\include" /I"%cd%\src\Headers" /D_WIN32_WINNT=0x0601 /Foobj\%%~ni.obj %%i
     )
 )
 set src_dependency_list=
