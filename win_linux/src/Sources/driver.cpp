@@ -11,12 +11,14 @@ using std::endl;
 void TestDynamic(int argc, char** argv);
 void TestStatic(int argc, char** argv);
 void TestStatic_2(int argc, char** argv);
+void TestStatic_3(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
-    TestDynamic(argc, argv);
+    //TestDynamic(argc, argv);
     //TestStatic(argc, argv);
     //TestStatic_2(argc, argv);
+    TestStatic_3(argc, argv);
     return 0;
 }
 
@@ -82,8 +84,8 @@ void TestStatic_2(int argc, char** argv)
 	
 	Network::WebClient Client;
 	Client.SendRequest(RequestMsg, ResponseMsg);
-    
-    
+        
+        
 	// Writing output to file
 	const size_t ResponseBufLen = 16;
 	std::string Response;
@@ -98,4 +100,24 @@ void TestStatic_2(int argc, char** argv)
 	output.write(Response.c_str(), (std::streamsize)Response.length());
 	output.close();
 }
+
+void TestStatic_3(int argc, char** argv)
+{
+    Network::HttpRequestMessage RequestMsg("GET", "https://www1.putlocker.digital/");
+    Network::HttpResponseMessage ResponseMsg;
+    
+    RequestMsg.SetHeader("Connection", "close");
+    
+    Network::WebClient Client;
+    Client.SendRequest(RequestMsg, ResponseMsg);
+    
+    if(ResponseMsg.GetResponseStatusCode() >= 200 && ResponseMsg.GetResponseStatusCode() < 300)
+    {
+        std::string ResponseContent = ResponseMsg.GetStringContentBody();
+        std::ofstream output("output.txt", std::ofstream::out | std::ofstream::trunc);
+        output.write(ResponseContent.c_str(), (std::streamsize)ResponseContent.length());
+        output.close();
+    }
+}
+
 
