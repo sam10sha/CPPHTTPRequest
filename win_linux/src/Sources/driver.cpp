@@ -8,6 +8,7 @@
 using std::cout;
 using std::endl;
 
+void TestHttpRequest(int argc, char** argv);
 void TestDynamic(int argc, char** argv);
 void TestStatic(int argc, char** argv);
 void TestStatic_2(int argc, char** argv);
@@ -15,7 +16,8 @@ void TestStatic_3(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
-    TestDynamic(argc, argv);
+    TestHttpRequest(argc, argv);
+    //TestDynamic(argc, argv);
     //TestStatic(argc, argv);
     //TestStatic_2(argc, argv);
     //TestStatic_3(argc, argv);
@@ -23,6 +25,21 @@ int main(int argc, char** argv)
 }
 
 
+void TestHttpRequest(int argc, char** argv)
+{
+    Network::HttpRequestMessage RequestMsg("GET", "https://www.google.com/");
+    RequestMsg.SetHeader("Connection", "close");
+    RequestMsg.SetHeader("Cookie", "JSESSIONID=AKJDFLKASJDFALDSIFJALDSFJAKDFJIWEFBOI");
+    RequestMsg.SetHeader("Cookie", "JSESSIONID=NothingExpires");
+    RequestMsg.SetHeader("Cookie", "FAEI");
+    RequestMsg.SetHeader("Cookie", "FLADO");
+    
+    std::string Response = RequestMsg.GetRequestHeaderSection();
+    
+    std::ofstream output("output.txt", std::ofstream::out | std::ofstream::trunc);
+    output.write(Response.c_str(), (std::streamsize)Response.length());
+    output.close();
+}
 void TestDynamic(int argc, char** argv)
 {
     if(argc >= 3)
@@ -43,10 +60,10 @@ void TestDynamic(int argc, char** argv)
         std::string Response = ResponseMsg.GetStringContentBody();
         
         cout << "driver[TestDynamic]: Response code: " << ResponseMsg.GetResponseStatusCode() << endl;
-	
-	std::ofstream output("output.txt", std::ofstream::out | std::ofstream::trunc);
-	output.write(Response.c_str(), (std::streamsize)Response.length());
-	output.close();
+        
+        std::ofstream output("output.txt", std::ofstream::out | std::ofstream::trunc);
+        output.write(Response.c_str(), (std::streamsize)Response.length());
+        output.close();
     }
     else
     {

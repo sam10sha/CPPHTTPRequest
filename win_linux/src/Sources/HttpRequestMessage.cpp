@@ -61,22 +61,23 @@ std::string Network::HttpRequestMessage::GetQueryPath() const
 {
     return mQueryPath;
 }
-std::string Network::HttpRequestMessage::GetRequestHeader(const std::string& Key) const
+std::vector<std::string> Network::HttpRequestMessage::GetRequestHeader(const std::string& Key) const
 {
-    std::string HeaderValue;
-    std::map<const std::string, std::string>::const_iterator HeaderIndex = mHeaders.find(Key);
-    if(HeaderIndex != mHeaders.end())
+    std::vector<std::string> HeaderValues;
+    std::pair<std::multimap<const std::string, std::string>::const_iterator, std::multimap<const std::string, std::string>::const_iterator> RangeOfElements;
+    RangeOfElements = mHeaders.equal_range(Key);
+    for(std::multimap<const std::string, std::string>::const_iterator HeaderIndex = RangeOfElements.first; HeaderIndex != RangeOfElements.second; HeaderIndex++)
     {
-        HeaderValue = HeaderIndex->second;
+        HeaderValues.push_back(HeaderIndex->second);
     }
-    return HeaderValue;
+    return HeaderValues;
 }
 std::string Network::HttpRequestMessage::GetRequestHeaderSection() const
 {
     std::string Header;
     Header += GetMethod() + " " + GetQueryPath() + " HTTP/1.1\r\n";
     Header += "Host: " + GetServerHostName() + "\r\n";
-    for(std::map<const std::string, std::string>::const_iterator HeaderEntry = mHeaders.begin();
+    for(std::multimap<const std::string, std::string>::const_iterator HeaderEntry = mHeaders.begin();
         HeaderEntry != mHeaders.end();
         HeaderEntry++)
     {
@@ -166,7 +167,7 @@ void Network::HttpRequestMessage::SetRemoteServerPort(const long Port)
 }
 void Network::HttpRequestMessage::SetHeader(const std::string& Key, const std::string& Value)
 {
-    mHeaders[Key] = Value;
+    mHeaders.insert(std::pair<const std::string, std::string>(Key, Value));
 }
 void Network::HttpRequestMessage::SetByteContent(const HttpByteContent* const Content)
 {

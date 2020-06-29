@@ -22,7 +22,7 @@ namespace Network
     // Public methods
     public:
         long GetResponseStatusCode();
-        std::string GetResponseHeader(const std::string& HeaderKey) const;
+        std::vector<std::string> GetResponseHeader(const std::string& HeaderKey) const;
         std::string GetStringContentBody() const;
         void GetStreamContentBody(IStreamWrap& StreamWrap) const;
         
@@ -53,7 +53,7 @@ namespace Network
         std::string mServerIPAddress;
         long mPort;
         std::string mQueryPath;
-        std::map<const std::string, std::string> mHeaders;
+        std::multimap<const std::string, std::string> mHeaders;
         HttpContent* mBody;
     };
 }
