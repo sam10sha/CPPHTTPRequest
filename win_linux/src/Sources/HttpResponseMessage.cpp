@@ -28,15 +28,16 @@ long Network::HttpResponseMessage::GetResponseStatusCode()
 {
     return mStatusCode;
 }
-std::string Network::HttpResponseMessage::GetResponseHeader(const std::string& HeaderKey) const
+std::vector<std::string> Network::HttpResponseMessage::GetResponseHeader(const std::string& HeaderKey) const
 {
-    std::string HeaderValue;
-    std::map<const std::string, std::string>::const_iterator HeaderIndex = mHeaders.find(HeaderKey);
-    if(HeaderIndex != mHeaders.end())
+    std::vector<std::string> HeaderValues;
+    std::pair<std::multimap<const std::string, std::string>::const_iterator, std::multimap<const std::string, std::string>::const_iterator> RangeOfElements;
+    RangeOfElements = mHeaders.equal_range(HeaderKey);
+    for(std::multimap<const std::string, std::string>::const_iterator HeaderIndex = RangeOfElements.first; HeaderIndex != RangeOfElements.second; HeaderIndex++)
     {
-        HeaderValue = HeaderIndex->second;
+        HeaderValues.push_back(HeaderIndex->second);
     }
-    return HeaderValue;
+    return HeaderValues;
 }
 std::string Network::HttpResponseMessage::GetStringContentBody() const
 {
@@ -83,7 +84,7 @@ void Network::HttpResponseMessage::SetQueryPath(const std::string& QueryPath)
 }
 void Network::HttpResponseMessage::SetHeader(const std::string& Key, const std::string& Value)
 {
-    mHeaders[Key] = Value;
+    mHeaders.insert(std::pair<const std::string, std::string>(Key, Value));
 }
 void Network::HttpResponseMessage::ParseRawHeader(const std::string& Header)
 {
@@ -108,7 +109,7 @@ void Network::HttpResponseMessage::ParseRawHeader(const std::string& Header)
         {
             HeaderKey = Line->substr(0, HeaderLineDelimiterPosition);
             HeaderValue = Line->substr(HeaderLineDelimiterPosition + 1);
-            mHeaders[HeaderKey] = HeaderValue;
+            mHeaders.insert(std::pair<const std::string, std::string>(HeaderKey, HeaderValue));
         }
     }
 }

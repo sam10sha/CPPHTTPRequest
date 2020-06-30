@@ -54,7 +54,7 @@ namespace Network
         std::string GetServerIPAddr() const;
         long GetPort() const;
         std::string GetQueryPath() const;
-        std::string GetRequestHeader(const std::string& Key) const;
+        std::vector<std::string> GetRequestHeader(const std::string& Key) const;
         std::string GetRequestHeaderSection() const;
         //std::string GetRequestBodyString() const;
         void GetRequestBodyStream(IStreamWrap& Stream) const;
@@ -89,7 +89,7 @@ namespace Network
         std::string mServerIPAddr;
         long mServerPort;
         std::string mQueryPath;
-        std::map<const std::string, std::string> mHeaders;
+        std::multimap<const std::string, std::string> mHeaders;
         HttpContent* mBody;
     };
 }

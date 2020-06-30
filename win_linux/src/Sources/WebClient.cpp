@@ -127,6 +127,7 @@ void Network::WebClient::SendHTTPSRequest(HttpRequestMessage& RequestMsg, HttpRe
     SSLContext.set_default_verify_paths();
     
     ssl::stream<boost::asio::ip::tcp::socket> SSLSocket(IOService, SSLContext);
+    SSL_set_tlsext_host_name(SSLSocket.native_handle(), RequestMsg.GetServerHostName().c_str());
     ConnectionSuccess = ConnectToRemoteServer(RequestMsg, IOService, (boost::asio::ip::tcp::socket&)SSLSocket.lowest_layer());
     if(ConnectionSuccess)
     {
@@ -141,6 +142,26 @@ void Network::WebClient::SendHTTPSRequest(HttpRequestMessage& RequestMsg, HttpRe
         SSLSocket.shutdown(ErrorCode);
         ((boost::asio::ip::tcp::socket&)SSLSocket.lowest_layer()).close(ErrorCode);
     }
+}
+bool Network::WebClient::SSLHandshake(const HttpRequestMessage& RequestMsg, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>& SSLSocket) const
+{
+    bool HandshakeSuccess = false;
+    namespace ssl = boost::asio::ssl;
+    
+    // Perform SSL handshake and verify the remote host's certificate.
+    SSLSocket.set_verify_mode(ssl::verify_peer);
+    //SSLSocket.set_verify_mode(ssl::verify_none);
+    SSLSocket.set_verify_callback(ssl::rfc2818_verification(RequestMsg.GetServerHostName()));
+    try
+    {
+        SSLSocket.handshake(ssl::stream<boost::asio::ip::tcp::socket>::client);
+        HandshakeSuccess = true;
+    }
+    catch(std::exception& e)
+    {
+        std::cout << "WebClient[SSLHandshake]: " << e.what() << std::endl;
+    }
+    return HandshakeSuccess;
 }
 void Network::WebClient::MakeSSLRequest(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>& SSLSocket, const HttpRequestMessage& RequestMsg) const
 {
@@ -273,26 +294,6 @@ bool Network::WebClient::ConnectToRemoteServer(HttpRequestMessage& RequestMsg, b
         }
     }
     return ConnectionSuccess;
-}
-bool Network::WebClient::SSLHandshake(const HttpRequestMessage& RequestMsg, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>& SSLSocket) const
-{
-    bool HandshakeSuccess = false;
-    namespace ssl = boost::asio::ssl;
-    
-    // Perform SSL handshake and verify the remote host's certificate.
-    //SSLSocket.set_verify_mode(ssl::verify_peer);
-    SSLSocket.set_verify_mode(ssl::verify_none);
-    SSLSocket.set_verify_callback(ssl::rfc2818_verification(RequestMsg.GetServerHostName()));
-    try
-    {
-        SSLSocket.handshake(ssl::stream<boost::asio::ip::tcp::socket>::client);
-        HandshakeSuccess = true;
-    }
-    catch(std::exception& e)
-    {
-        std::cout << "WebClient[SSLHandshake]: " << e.what() << std::endl;
-    }
-    return HandshakeSuccess;
 }
 int Network::WebClient::FindStr(const void* const RawData, const size_t RawDataLen, const std::string& StrToFind) const
 {
