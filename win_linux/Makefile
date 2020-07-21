@@ -13,32 +13,24 @@ LIB_DIR                     = lib
 BIN_DIR                     = bin
 
 # Files
-NETWORK_A                   = $(LIB_DIR)/libNetwork.a
-STDAFX_H                    = $(HEAD_DIR)/stdafx.h
-DRIVER_CPP                  = $(SRC_DIR)/driver.cpp
-DRIVER_O                    = $(OBJ_DIR)/driver.o
-HTTPCONTENT_H               = $(HEAD_DIR)/HttpContent.h
-HTTPCONTENT_CPP             = $(SRC_DIR)/HttpContent.cpp
-HTTPCONTENT_O               = $(OBJ_DIR)/HttpContent.o
-HTTPBYTECONTENT_H           = $(HEAD_DIR)/HttpByteContent.h
-HTTPBYTECONTENT_CPP         = $(SRC_DIR)/HttpByteContent.cpp
-HTTPBYTECONTENT_O           = $(OBJ_DIR)/HttpByteContent.o
-HTTPFILESTREAMCONTENT_H     = $(HEAD_DIR)/HttpFileStreamContent.h
-HTTPFILESTREAMCONTENT_CPP   = $(SRC_DIR)/HttpFileStreamContent.cpp
-HTTPFILESTREAMCONTENT_O     = $(OBJ_DIR)/HttpFileStreamContent.o
-HTTPSTRINGCONTENT_H         = $(HEAD_DIR)/HttpStringContent.h
-HTTPSTRINGCONTENT_CPP       = $(SRC_DIR)/HttpStringContent.cpp
-HTTPSTRINGCONTENT_O         = $(OBJ_DIR)/HttpStringContent.o
-HTTPREQUESTMESSAGE_H        = $(HEAD_DIR)/HttpRequestMessage.h
-HTTPREQUESTMESSAGE_CPP      = $(SRC_DIR)/HttpRequestMessage.cpp
-HTTPREQUESTMESSAGE_O        = $(OBJ_DIR)/HttpRequestMessage.o
-HTTPRESPONSEMESSAGE_H       = $(HEAD_DIR)/HttpResponseMessage.h
-HTTPRESPONSEMESSAGE_CPP     = $(SRC_DIR)/HttpResponseMessage.cpp
-HTTPRESPONSEMESSAGE_O       = $(OBJ_DIR)/HttpResponseMessage.o
-WEBCLIENT_H                 = $(HEAD_DIR)/WebClient.h
-WEBCLIENT_CPP               = $(SRC_DIR)/WebClient.cpp
-WEBCLIENT_O                 = $(OBJ_DIR)/WebClient.o
 MAIN                        = $(BIN_DIR)/main
+DRIVER_O                    = $(OBJ_DIR)/driver.o
+DRIVER_CPP                  = $(SRC_DIR)/driver.cpp
+NETWORK_A                   = $(LIB_DIR)/libNetwork.a
+NETWORK_A_OBJ               = $(OBJ_DIR)/HttpContent.o\
+                                $(OBJ_DIR)/HttpByteContent.o\
+                                $(OBJ_DIR)/HttpFileStreamContent.o\
+                                $(OBJ_DIR)/HttpStringContent.o\
+                                $(OBJ_DIR)/HttpRequestMessage.o\
+                                $(OBJ_DIR)/HttpResponseMessage.o\
+                                $(OBJ_DIR)/WebClient.o
+NETWORK_A_SRC               = $(SRC_DIR)/HttpContent.cpp\
+                                $(SRC_DIR)/HttpByteContent.cpp\
+                                $(SRC_DIR)/HttpFileStreamContent.cpp\
+                                $(SRC_DIR)/HttpStringContent.cpp\
+                                $(SRC_DIR)/HttpRequestMessage.cpp\
+                                $(SRC_DIR)/HttpResponseMessage.cpp\
+                                $(SRC_DIR)/WebClient.cpp
 
 
 main: $(MAIN)
@@ -48,34 +40,18 @@ $(MAIN): $(DRIVER_O) $(NETWORK_A) | $(BIN_DIR)
 	$(CC) -L/usr/local/lib/boost/ $^ -lpthread -lcrypto -lssl -o $@
 
 # Libraries
-$(NETWORK_A): $(HTTPCONTENT_O) $(HTTPBYTECONTENT_O) $(HTTPFILESTREAMCONTENT_O) $(HTTPSTRINGCONTENT_O) $(HTTPREQUESTMESSAGE_O) $(HTTPRESPONSEMESSAGE_O) $(WEBCLIENT_O) | $(LIB_DIR)
+$(NETWORK_A): $(NETWORK_A_OBJ) | $(LIB_DIR)
 	$(AR) $@ $^
 
 # Object files
 $(DRIVER_O): $(DRIVER_CPP) | $(OBJ_DIR)
 	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(DRIVER_CPP) -o $@
 
-$(HTTPCONTENT_O): $(HTTPCONTENT_H) $(HTTPCONTENT_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPCONTENT_CPP) -o $@
-
-$(HTTPBYTECONTENT_O): $(HTTPBYTECONTENT_H) $(HTTPBYTECONTENT_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPBYTECONTENT_CPP) -o $@
-
-$(HTTPSTRINGCONTENT_O): $(HTTPSTRINGCONTENT_H) $(HTTPSTRINGCONTENT_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPSTRINGCONTENT_CPP) -o $@
-
-$(HTTPFILESTREAMCONTENT_O): $(HTTPFILESTREAMCONTENT_H) $(HTTPFILESTREAMCONTENT_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPFILESTREAMCONTENT_CPP) -o $@
-
-$(HTTPREQUESTMESSAGE_O): $(HTTPREQUESTMESSAGE_H) $(HTTPREQUESTMESSAGE_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPREQUESTMESSAGE_CPP) -o $@
-
-$(HTTPRESPONSEMESSAGE_O): $(HTTPRESPONSEMESSAGE_H) $(HTTPRESPONSEMESSAGE_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPRESPONSEMESSAGE_CPP) -o $@
-
-$(WEBCLIENT_O): $(WEBCLIENT_H) $(WEBCLIENT_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(WEBCLIENT_CPP) -o $@
-	
+$(NETWORK_A_OBJ): $(NETWORK_A_SRC) | $(OBJ_DIR)
+	for source in $^; do\
+	    echo g++ -c -std=c++11 -Wall -Isrc/Headers -o $(OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
+	    g++ -c -std=c++11 -Wall -Isrc/Headers -o $(OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
+	done
 
 
 $(OBJ_DIR):
@@ -92,3 +68,53 @@ clean:
 	rm -f obj/* lib/* bin/*
 
 
+
+
+
+#LEGACY
+#STDAFX_H                    = $(HEAD_DIR)/stdafx.h
+#HTTPCONTENT_H               = $(HEAD_DIR)/HttpContent.h
+#HTTPCONTENT_CPP             = $(SRC_DIR)/HttpContent.cpp
+#HTTPCONTENT_O               = $(OBJ_DIR)/HttpContent.o
+#HTTPBYTECONTENT_H           = $(HEAD_DIR)/HttpByteContent.h
+#HTTPBYTECONTENT_CPP         = $(SRC_DIR)/HttpByteContent.cpp
+#HTTPBYTECONTENT_O           = $(OBJ_DIR)/HttpByteContent.o
+#HTTPFILESTREAMCONTENT_H     = $(HEAD_DIR)/HttpFileStreamContent.h
+#HTTPFILESTREAMCONTENT_CPP   = $(SRC_DIR)/HttpFileStreamContent.cpp
+#HTTPFILESTREAMCONTENT_O     = $(OBJ_DIR)/HttpFileStreamContent.o
+#HTTPSTRINGCONTENT_H         = $(HEAD_DIR)/HttpStringContent.h
+#HTTPSTRINGCONTENT_CPP       = $(SRC_DIR)/HttpStringContent.cpp
+#HTTPSTRINGCONTENT_O         = $(OBJ_DIR)/HttpStringContent.o
+#HTTPREQUESTMESSAGE_H        = $(HEAD_DIR)/HttpRequestMessage.h
+#HTTPREQUESTMESSAGE_CPP      = $(SRC_DIR)/HttpRequestMessage.cpp
+#HTTPREQUESTMESSAGE_O        = $(OBJ_DIR)/HttpRequestMessage.o
+#HTTPRESPONSEMESSAGE_H       = $(HEAD_DIR)/HttpResponseMessage.h
+#HTTPRESPONSEMESSAGE_CPP     = $(SRC_DIR)/HttpResponseMessage.cpp
+#HTTPRESPONSEMESSAGE_O       = $(OBJ_DIR)/HttpResponseMessage.o
+#WEBCLIENT_H                 = $(HEAD_DIR)/WebClient.h
+#WEBCLIENT_CPP               = $(SRC_DIR)/WebClient.cpp
+#WEBCLIENT_O                 = $(OBJ_DIR)/WebClient.o
+#$(NETWORK_A): $(HTTPCONTENT_O) $(HTTPBYTECONTENT_O) $(HTTPFILESTREAMCONTENT_O) $(HTTPSTRINGCONTENT_O) $(HTTPREQUESTMESSAGE_O) $(HTTPRESPONSEMESSAGE_O) $(WEBCLIENT_O) | $(LIB_DIR)
+#$(DRIVER_O): $(DRIVER_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(DRIVER_CPP) -o $@
+
+#$(HTTPCONTENT_O): $(HTTPCONTENT_H) $(HTTPCONTENT_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPCONTENT_CPP) -o $@
+
+#$(HTTPBYTECONTENT_O): $(HTTPBYTECONTENT_H) $(HTTPBYTECONTENT_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPBYTECONTENT_CPP) -o $@
+
+#$(HTTPSTRINGCONTENT_O): $(HTTPSTRINGCONTENT_H) $(HTTPSTRINGCONTENT_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPSTRINGCONTENT_CPP) -o $@
+
+#$(HTTPFILESTREAMCONTENT_O): $(HTTPFILESTREAMCONTENT_H) $(HTTPFILESTREAMCONTENT_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPFILESTREAMCONTENT_CPP) -o $@
+
+#$(HTTPREQUESTMESSAGE_O): $(HTTPREQUESTMESSAGE_H) $(HTTPREQUESTMESSAGE_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPREQUESTMESSAGE_CPP) -o $@
+
+#$(HTTPRESPONSEMESSAGE_O): $(HTTPRESPONSEMESSAGE_H) $(HTTPRESPONSEMESSAGE_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(HTTPRESPONSEMESSAGE_CPP) -o $@
+
+#$(WEBCLIENT_O): $(WEBCLIENT_H) $(WEBCLIENT_CPP) | $(OBJ_DIR)
+#	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(WEBCLIENT_CPP) -o $@
