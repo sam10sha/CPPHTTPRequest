@@ -1,14 +1,66 @@
 #include "stdafx.h"
+#include "HttpStreamContent.h"
+#include "HttpRequestMessage.h"
+#include "HttpResponseMessage.h"
 #include "WebClient.h"
 
 // Public construction
-Network::WebClient::WebClient()
-    : RequestDelimiter("\r\n") { }
+Network::WebClient::WebClient() :
+	RequestDelimiter("\r\n"),
+	Protocol(HTTP),
+	IOService(nullptr),
+	SSLContext(nullptr),
+	HTTPSocket(nullptr),
+	HTTPSSocket(nullptr),
+	DataRetCB(this, &WebClient::RetrieveData)
+{
+
+}
+Network::WebClient::~WebClient()
+{
+	if(HTTPSocket)
+	{
+		try
+		{
+			HTTPSocket->close();
+		}
+		catch(boost::wrapexcept<boost::system::system_error>& e)
+		{
+
+		}
+		delete HTTPSocket;
+		HTTPSocket = nullptr;
+	}
+	if(HTTPSSocket)
+	{
+		try
+		{
+			HTTPSSocket->shutdown();
+			((boost::asio::ip::tcp::socket&)HTTPSSocket->lowest_layer()).close();
+		}
+		catch(boost::wrapexcept<boost::system::system_error>& e)
+		{
+
+		}
+		delete HTTPSSocket;
+		HTTPSSocket = nullptr;
+	}
+	if(IOService)
+	{
+		delete IOService;
+		IOService = nullptr;
+	}
+	if(SSLContext)
+	{
+		delete SSLContext;
+		SSLContext = nullptr;
+	}
+}
 
 
 // Public member functions
 void Network::WebClient::SendRequest(Network::HttpRequestMessage& RequestMsg,
-                                        Network::HttpResponseMessage& ResponseMsg) const
+                                        Network::HttpResponseMessage& ResponseMsg)
 {
     std::string Protocol = RequestMsg.GetProtocol();
     if(Protocol == "http")
@@ -19,32 +71,38 @@ void Network::WebClient::SendRequest(Network::HttpRequestMessage& RequestMsg,
     {
         SendHTTPSRequest(RequestMsg, ResponseMsg);
     }
+
+    ResponseMsg.SetMethod(RequestMsg.GetMethod());
+	ResponseMsg.SetURL(RequestMsg.GetURL());
+	ResponseMsg.SetServerHostName(RequestMsg.GetServerHostName());
+	ResponseMsg.SetServerIPAddr(RequestMsg.GetServerIPAddr());
+	ResponseMsg.SetPort(RequestMsg.GetPort());
+	ResponseMsg.SetQueryPath(RequestMsg.GetQueryPath());
 }
 
 
 
 
 // Private member functions
-void Network::WebClient::SendHTTPRequest(HttpRequestMessage& RequestMsg, HttpResponseMessage& ResponseMsg) const
+void Network::WebClient::SendHTTPRequest(HttpRequestMessage& RequestMsg, HttpResponseMessage& ResponseMsg)
 {
     bool ConnectionSuccess = false;
     boost::system::error_code ErrorCode;
+    Protocol = HTTP;
 	
-    boost::asio::io_service IOService;
-    boost::asio::ip::tcp::socket Socket(IOService);
+    IOService = new boost::asio::io_service;
+    HTTPSocket = new boost::asio::ip::tcp::socket(*IOService);
     
-    ConnectionSuccess = ConnectToRemoteServer(RequestMsg, IOService, Socket);
+    ConnectionSuccess = ConnectToRemoteServer(RequestMsg, *IOService, *HTTPSocket);
     if(ConnectionSuccess)
     {
-        MakeRequest(Socket, RequestMsg);
-        ReceiveResponse(Socket, RequestMsg, ResponseMsg);
-        
-        Socket.close(ErrorCode);
+        MakeRequest(*HTTPSocket, RequestMsg);
+        ReceiveResponse(*HTTPSocket, RequestMsg, ResponseMsg);
     }
 }
 void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const HttpRequestMessage& RequestMsg) const
 {
-    IStreamWrap StreamWrap;
+	std::istream* ContentStream = nullptr;
     boost::system::error_code Error;
     // Create request
     boost::asio::streambuf Request;
@@ -57,18 +115,17 @@ void Network::WebClient::MakeRequest(boost::asio::ip::tcp::socket& Socket, const
     boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
 	
     // Send request content
-    RequestMsg.GetRequestBodyStream(StreamWrap);
-    if(StreamWrap.mStream)
+    ContentStream = RequestMsg.GetRequestBodyStream();
+    if(ContentStream)
     {
-        std::istream& Stream = *StreamWrap.mStream;
-        RequestStream << Stream.rdbuf();
+        RequestStream << ContentStream->rdbuf();
         RequestStream << RequestDelimiter;
         boost::asio::write(Socket, Request, boost::asio::transfer_all(), Error);
     }
 }
 void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket,
                                             const Network::HttpRequestMessage& RequestMsg,
-                                            Network::HttpResponseMessage& ResponseMsg) const
+                                            Network::HttpResponseMessage& ResponseMsg)
 {
     boost::system::error_code Error;
     // Create response buffer
@@ -76,7 +133,7 @@ void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket,
     const std::string HeadBodyDelimiter("\r\n\r\n");
     int HeadBodyDelimiterLocation = 0;
     std::string Headers;
-    std::string Content;
+    HttpStreamContent* StreamContent = nullptr;
     
     // Receive headers
     boost::asio::read_until(Socket, Response, HeadBodyDelimiter.c_str(), Error);
@@ -90,57 +147,46 @@ void Network::WebClient::ReceiveResponse(boost::asio::ip::tcp::socket& Socket,
         Headers = boost::asio::buffer_cast<const char*>(Response.data());
     }
     // Receive content
-    boost::asio::read(Socket, Response, Error);
-    if(HeadBodyDelimiterLocation >= 0                                               // if no delimiter found, assume entire response is header
-        && HeadBodyDelimiterLocation + HeadBodyDelimiter.size() < Response.size())  // if delimiter is at the end of the response, leave content blank
-    {
-        Content = std::string(
-            boost::asio::buffer_cast<const char*>(Response.data()) + HeadBodyDelimiterLocation + HeadBodyDelimiter.size(),
-            Response.size() - HeadBodyDelimiterLocation - HeadBodyDelimiter.size()
-        );
-    }
-    
+    StreamContent = new HttpStreamContent(0x200, 0);
+    StreamContent->RegisterDataCB(&DataRetCB);
+    StreamContent->InjectData(
+		boost::asio::buffer_cast<const char*>(Response.data()) + HeadBodyDelimiterLocation + HeadBodyDelimiter.size(),
+		Response.size() - HeadBodyDelimiterLocation - HeadBodyDelimiter.size()
+    );
+
     // Set response message components
-    ResponseMsg.SetMethod(RequestMsg.GetMethod());
-    ResponseMsg.SetURL(RequestMsg.GetURL());
-    ResponseMsg.SetServerHostName(RequestMsg.GetServerHostName());
-    ResponseMsg.SetServerIPAddr(RequestMsg.GetServerIPAddr());
-    ResponseMsg.SetPort(RequestMsg.GetPort());
-    ResponseMsg.SetQueryPath(RequestMsg.GetQueryPath());
     ResponseMsg.ParseRawHeader(Headers);
-    ResponseMsg.SetStringContent(HttpStringContent(Content));
+    ResponseMsg.SetContent(StreamContent);
 }
 
 
 
 
-void Network::WebClient::SendHTTPSRequest(HttpRequestMessage& RequestMsg, HttpResponseMessage& ResponseMsg) const
+void Network::WebClient::SendHTTPSRequest(HttpRequestMessage& RequestMsg, HttpResponseMessage& ResponseMsg)
 {
     bool ConnectionSuccess = false;
     bool HandshakeSuccess = false;
     namespace ssl = boost::asio::ssl;
-    boost::asio::io_service IOService;
     boost::system::error_code ErrorCode;
+    Protocol = HTTPS;
     
+    IOService = new boost::asio::io_service;
+
     // Create a context that uses the default paths for finding CA certificates.
-    ssl::context SSLContext(ssl::context::sslv23);
-    SSLContext.set_default_verify_paths();
+    SSLContext = new ssl::context(ssl::context::sslv23);
+    SSLContext->set_default_verify_paths();
     
-    ssl::stream<boost::asio::ip::tcp::socket> SSLSocket(IOService, SSLContext);
-    SSL_set_tlsext_host_name(SSLSocket.native_handle(), RequestMsg.GetServerHostName().c_str());
-    ConnectionSuccess = ConnectToRemoteServer(RequestMsg, IOService, (boost::asio::ip::tcp::socket&)SSLSocket.lowest_layer());
+    HTTPSSocket = new ssl::stream<boost::asio::ip::tcp::socket>(*IOService, *SSLContext);
+    ConnectionSuccess = ConnectToRemoteServer(RequestMsg, *IOService, (boost::asio::ip::tcp::socket&)HTTPSSocket->lowest_layer());
     if(ConnectionSuccess)
     {
         //SSLSocket.lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
-        HandshakeSuccess = SSLHandshake(RequestMsg, SSLSocket);
+        HandshakeSuccess = SSLHandshake(RequestMsg, *HTTPSSocket);
     }
     if(HandshakeSuccess)
     {
-        MakeSSLRequest(SSLSocket, RequestMsg);
-        ReceiveSSLResponse(SSLSocket, RequestMsg, ResponseMsg);
-        
-        SSLSocket.shutdown(ErrorCode);
-        ((boost::asio::ip::tcp::socket&)SSLSocket.lowest_layer()).close(ErrorCode);
+        MakeSSLRequest(*HTTPSSocket, RequestMsg);
+        ReceiveSSLResponse(*HTTPSSocket, RequestMsg, ResponseMsg);
     }
 }
 bool Network::WebClient::SSLHandshake(const HttpRequestMessage& RequestMsg, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>& SSLSocket) const
@@ -152,6 +198,7 @@ bool Network::WebClient::SSLHandshake(const HttpRequestMessage& RequestMsg, boos
     SSLSocket.set_verify_mode(ssl::verify_peer);
     //SSLSocket.set_verify_mode(ssl::verify_none);
     SSLSocket.set_verify_callback(ssl::rfc2818_verification(RequestMsg.GetServerHostName()));
+    SSL_set_tlsext_host_name(SSLSocket.native_handle(), RequestMsg.GetServerHostName().c_str());
     try
     {
         SSLSocket.handshake(ssl::stream<boost::asio::ip::tcp::socket>::client);
@@ -165,7 +212,7 @@ bool Network::WebClient::SSLHandshake(const HttpRequestMessage& RequestMsg, boos
 }
 void Network::WebClient::MakeSSLRequest(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>& SSLSocket, const HttpRequestMessage& RequestMsg) const
 {
-    IStreamWrap StreamWrap;
+	std::istream* ContentStream = nullptr;
     boost::system::error_code Error;
     // Create request
     boost::asio::streambuf Request;
@@ -177,18 +224,17 @@ void Network::WebClient::MakeSSLRequest(boost::asio::ssl::stream<boost::asio::ip
     boost::asio::write(SSLSocket, Request, boost::asio::transfer_all(), Error);
 	
     // Send request content
-    RequestMsg.GetRequestBodyStream(StreamWrap);
-    if(StreamWrap.mStream)
+    ContentStream = RequestMsg.GetRequestBodyStream();
+    if(ContentStream)
     {
-        std::istream& Stream = *StreamWrap.mStream;
-        RequestStream << Stream.rdbuf();
+        RequestStream << ContentStream->rdbuf();
         RequestStream << RequestDelimiter;
         boost::asio::write(SSLSocket, Request, boost::asio::transfer_all(), Error);
     }
 }
 void Network::WebClient::ReceiveSSLResponse(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>& SSLSocket,
                                             const Network::HttpRequestMessage& RequestMsg,
-                                            Network::HttpResponseMessage& ResponseMsg) const
+                                            Network::HttpResponseMessage& ResponseMsg)
 {
     boost::system::error_code Error;
     // Create response buffer
@@ -196,8 +242,8 @@ void Network::WebClient::ReceiveSSLResponse(boost::asio::ssl::stream<boost::asio
     const std::string HeadBodyDelimiter("\r\n\r\n");
     int HeadBodyDelimiterLocation = 0;
     std::string Headers;
-    std::string Content;
-    
+    HttpStreamContent* StreamContent = nullptr;
+
     // Receive headers
     boost::asio::read_until(SSLSocket, Response, HeadBodyDelimiter.c_str(), Error);
     HeadBodyDelimiterLocation = FindStr(boost::asio::buffer_cast<const char*>(Response.data()), Response.size(), HeadBodyDelimiter);
@@ -210,25 +256,17 @@ void Network::WebClient::ReceiveSSLResponse(boost::asio::ssl::stream<boost::asio
         Headers = boost::asio::buffer_cast<const char*>(Response.data());
     }
     // Receive content
-    boost::asio::read(SSLSocket, Response, Error);
-    if(HeadBodyDelimiterLocation >= 0                                               // if no delimiter found, assume entire response is header
-        && HeadBodyDelimiterLocation + HeadBodyDelimiter.size() < Response.size())  // if delimiter is at the end of the response, leave content blank
-    {
-        Content = std::string(
-            boost::asio::buffer_cast<const char*>(Response.data()) + HeadBodyDelimiterLocation + HeadBodyDelimiter.size(),
-            Response.size() - HeadBodyDelimiterLocation - HeadBodyDelimiter.size()
-        );
-    }
-    
+    StreamContent = new HttpStreamContent(0x200, 0);
+    //StreamContent = new HttpStreamContent(0x10000, 0);
+    StreamContent->RegisterDataCB(&DataRetCB);
+    StreamContent->InjectData(
+		boost::asio::buffer_cast<const char*>(Response.data()) + HeadBodyDelimiterLocation + HeadBodyDelimiter.size(),
+		Response.size() - HeadBodyDelimiterLocation - HeadBodyDelimiter.size()
+    );
+
     // Set response message components
-    ResponseMsg.SetMethod(RequestMsg.GetMethod());
-    ResponseMsg.SetURL(RequestMsg.GetURL());
-    ResponseMsg.SetServerHostName(RequestMsg.GetServerHostName());
-    ResponseMsg.SetServerIPAddr(RequestMsg.GetServerIPAddr());
-    ResponseMsg.SetPort(RequestMsg.GetPort());
-    ResponseMsg.SetQueryPath(RequestMsg.GetQueryPath());
     ResponseMsg.ParseRawHeader(Headers);
-    ResponseMsg.SetStringContent(HttpStringContent(Content));
+    ResponseMsg.SetContent(StreamContent);
 }
 
 
@@ -273,8 +311,6 @@ bool Network::WebClient::ConnectToRemoteServer(HttpRequestMessage& RequestMsg, b
             !ConnectionSuccess && IPEndPt != RemoteServerIPEndPts.end();
             IPEndPt++)
         {
-            /* std::cout << "WebClient[ConnectToRemoteServer]: " << "IP: " << IPEndPt->mIPAddr << std::endl;
-            std::cout << "WebClient[ConnectToRemoteServer]: " << "Port: " << IPEndPt->mPort << std::endl; */
             boost::asio::ip::tcp::endpoint EndPoint(
                 boost::asio::ip::address::from_string(IPEndPt->mIPAddr.c_str()),
                 (int)IPEndPt->mPort
@@ -312,3 +348,21 @@ int Network::WebClient::FindStr(const void* const RawData, const size_t RawDataL
     return Location;
 }
 
+
+// Private callbacks
+size_t Network::WebClient::RetrieveData(void* const Buffer, const size_t MaxLen)
+{
+	size_t NumBytesRead = 0;
+    boost::system::error_code Error;
+    switch(Protocol)
+    {
+		case HTTP:
+			NumBytesRead = boost::asio::read(*HTTPSocket, boost::asio::buffer(Buffer, MaxLen), Error);
+			break;
+		case HTTPS:
+			NumBytesRead = HTTPSSocket->read_some(boost::asio::buffer(Buffer, MaxLen), Error);
+			//NumBytesRead = boost::asio::read(*HTTPSSocket, boost::asio::buffer(Buffer, MaxLen), Error);
+			break;
+    }
+	return NumBytesRead;
+}

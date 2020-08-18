@@ -9,14 +9,14 @@ Network::HttpContent::HttpContent(std::istream* const Content, const size_t Cont
     mContentStream(Content),
     mContentLength(ContentLength)
 {
-    if(mContentStream == NULL)
+    if(mContentStream == nullptr)
     {
         mContentStream = new std::istringstream(std::string());
         mContentLength = 0;
     }
 }
 /* Network::HttpContent::HttpContent(const HttpContent& Content) :
-    mContentStream(NULL),
+    mContentStream(nullptr),
     mContentLength(Content.mContentLength) { } */
 
 // Public destruction
@@ -25,7 +25,7 @@ Network::HttpContent::~HttpContent()
     if(mContentStream)
     {
         delete mContentStream;
-        mContentStream = NULL;
+        mContentStream = nullptr;
     }
 }
 
@@ -34,10 +34,6 @@ Network::HttpContent::~HttpContent()
 std::istream* Network::HttpContent::GetContent()
 {
     return mContentStream;
-} 
-void Network::HttpContent::GetContent(Network::IStreamWrap& Stream) const
-{
-    Stream.mStream = mContentStream;
 }
 size_t Network::HttpContent::GetContentLength() const
 {

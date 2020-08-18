@@ -1,4 +1,4 @@
-#include <stdafx.h>
+#include "stdafx.h"
 #include "HttpByteContent.h"
 #include "HttpStringContent.h"
 #include "HttpRequestMessage.h"

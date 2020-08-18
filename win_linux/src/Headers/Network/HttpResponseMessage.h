@@ -2,7 +2,6 @@
 #define HTTPRESPONSEMESSAGE_H
 
 #include "HttpStringContent.h"
-#include "IStreamWrap.h"
 
 namespace Network
 {
@@ -21,10 +20,12 @@ namespace Network
         
     // Public methods
     public:
-        long GetResponseStatusCode();
+        long GetResponseStatusCode() const;
+        std::string GetResponseStatusMessage() const;
+        std::multimap<const std::string, std::string> GetAllHeaders() const;
         std::vector<std::string> GetResponseHeader(const std::string& HeaderKey) const;
         std::string GetStringContentBody() const;
-        void GetStreamContentBody(IStreamWrap& StreamWrap) const;
+        std::istream* GetStreamContentBody() const;
         
         void SetMethod(const std::string& Method);
         void SetURL(const std::string& URL);
@@ -32,14 +33,17 @@ namespace Network
         void SetServerIPAddr(const std::string& ServerIPAddr);
         void SetPort(const long Port);
         void SetQueryPath(const std::string& QueryPath);
+        void AddHeader(const std::string& Key, const std::string& Value);
         void SetHeader(const std::string& Key, const std::string& Value);
         void ParseRawHeader(const std::string& Header);
         void SetStringContent(const HttpStringContent* const Content);
         void SetStringContent(const HttpStringContent& Content);
+        void SetContent(HttpContent* const Content, const bool IsManagedExternally = false);
 	
     // Private methods
     private:
         void ParseResponseHeaderStatusLine(const std::string& HeaderStatusLine);
+        std::string Trim(const std::string& Str) const;
         
     // Private instance variables
     private:
@@ -53,8 +57,10 @@ namespace Network
         std::string mServerIPAddress;
         long mPort;
         std::string mQueryPath;
-        std::multimap<const std::string, std::string> mHeaders;
+        std::map<const std::string, std::string> mSingleHeaders;
+        std::multimap<const std::string, std::string> mMultiHeaders;
         HttpContent* mBody;
+        bool BodyManagedExternally;
     };
 }
 

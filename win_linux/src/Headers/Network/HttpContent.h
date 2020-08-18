@@ -1,7 +1,7 @@
 #ifndef HTTPCONTENT_H
 #define HTTPCONTENT_H
 
-#include "IStreamWrap.h"
+#include <iostream>
 
 namespace Network
 {
@@ -28,7 +28,6 @@ namespace Network
         // Public methods            
         public:
             virtual std::istream* GetContent();
-            virtual void GetContent(IStreamWrap& Stream) const;
             virtual size_t GetContentLength() const;
     };
 }

@@ -2,7 +2,6 @@
 #define HTTPSTRINGCONTENT_H
 
 #include "HttpContent.h"
-#include "IStreamWrap.h"
 
 namespace Network
 {
@@ -17,16 +16,10 @@ namespace Network
         HttpStringContent();
         HttpStringContent(const std::string& Content);
         HttpStringContent(const HttpStringContent& Content);
-        ~HttpStringContent();
         
     // Public operator overloads
     public:
         HttpStringContent& operator=(const HttpStringContent& Content);
-            
-    // Public methods            
-    public:
-        virtual std::istream* GetContent();
-        virtual void GetContent(IStreamWrap& Stream) const;
     };
 }
 

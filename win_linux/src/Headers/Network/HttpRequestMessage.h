@@ -4,11 +4,11 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "HttpContent.h"
+
 #include "HttpByteContent.h"
+#include "HttpContent.h"
 #include "HttpFileStreamContent.h"
 #include "HttpStringContent.h"
-#include "IStreamWrap.h"
 
 namespace Network
 {
@@ -57,7 +57,7 @@ namespace Network
         std::vector<std::string> GetRequestHeader(const std::string& Key) const;
         std::string GetRequestHeaderSection() const;
         //std::string GetRequestBodyString() const;
-        void GetRequestBodyStream(IStreamWrap& Stream) const;
+        std::istream* GetRequestBodyStream() const;
         
         void SetMethod(const std::string& Method);
         void SetURL(const std::string& URL);
@@ -65,6 +65,7 @@ namespace Network
         void SetRemoteServerIPAddr(const std::string& IPAddr);
         void SetRemoteServerPort(const long Port);
         
+        void AddHeader(const std::string& Key, const std::string& Value);
         void SetHeader(const std::string& Key, const std::string& Value);
         void SetByteContent(const HttpByteContent* const Content);
         void SetByteContent(const HttpByteContent& Content);
@@ -76,6 +77,7 @@ namespace Network
     // Private methods
     private:
         void DecodeURL();
+        std::string Trim(const std::string& Str) const;
         
         
     // Private instance variables
@@ -89,7 +91,8 @@ namespace Network
         std::string mServerIPAddr;
         long mServerPort;
         std::string mQueryPath;
-        std::multimap<const std::string, std::string> mHeaders;
+        std::map<const std::string, std::string> mSingleHeaders;
+        std::multimap<const std::string, std::string> mMultiHeaders;
         HttpContent* mBody;
     };
 }

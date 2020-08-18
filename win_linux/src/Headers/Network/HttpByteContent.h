@@ -2,7 +2,7 @@
 #define HTTPBYTECONTENT_H
 
 #include "HttpContent.h"
-#include "IStreamWrap.h"
+#include "GenericStreamBuf.h"
 
 namespace Network
 {
@@ -10,13 +10,13 @@ namespace Network
     {
     // Private embedded declarations
     private:
-        class membuf : public std::basic_streambuf<char>
+        /* class membuf : public std::basic_streambuf<char>
         {
-            public:
-                membuf(const char *p, size_t l)
-                {
-                    setg((char*)p, (char*)p, (char*)p + l);
-                }
+		public:
+			membuf(const char *p, size_t l)
+			{
+				setg((char*)p, (char*)p, (char*)p + l);
+			}
         };
         class memstream : public std::istream
         {
@@ -30,13 +30,14 @@ namespace Network
 
         private:
             membuf _buffer;
-        };
+        }; */
         
         
         
     // Private instance variables
     private:
         char* mContentBytes;
+        GenericIO::GenericStreamBuf* mContentStreamBuf;
         
     // Public construction/destruction
     public:
@@ -47,12 +48,7 @@ namespace Network
         
     // Public operator overloads
     public:
-        void operator=(HttpByteContent& Content);
-        
-    // Public member functions
-    public:
-        std::istream* GetContent();
-        void GetContent(IStreamWrap& Stream) const;
+        HttpByteContent& operator=(const HttpByteContent& Content);
     };
 }
 
