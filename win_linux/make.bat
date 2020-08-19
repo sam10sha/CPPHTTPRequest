@@ -1,9 +1,8 @@
 @echo off
 
 if ["%BOOST_HOME%"] == [] (set BOOST_HOME_ORIGINAL=) else (set BOOST_HOME_ORIGINAL=%BOOST_HOME%)
-set BOOST_HOME=%ProgramFiles%\boost\boost_1_73_0
 if ["%OPENSSL_HOME%"] == [] (set OPENSSL_HOME_ORIGINAL=) else (set OPENSSL_HOME_ORIGINAL=%OPENSSL_HOME%)
-set OPENSSL_HOME=%ProgramFiles%\openssl\openssl-3.0.0-alpha6
+call paths.bat
 
 path | findstr /C:"Microsoft Visual Studio" > nul || (
     call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"

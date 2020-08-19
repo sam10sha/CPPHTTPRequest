@@ -15,4 +15,5 @@
    **libboost_regex-vc*-mt-*-*.lib
 
 *  Follow instructions to build openssl
+   HINT: Download portable version of Strawberry Perl and portable version of NASM
 ** Follow instructions to build boost
