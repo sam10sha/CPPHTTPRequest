@@ -1,14 +1,25 @@
+# Resources
+BOOST_HOME                  = /opt/cpp_packages/boost/boost_1_72_0
+
 # Compiler
 CC                          = g++
 AR                          = ar rcs
 RANLIB                      = ranlib
 NOLINK                      = -c
 CFLAGS                      = -std=c++11 -Wall
+SYSINCLUDE                  = -isystem $(BOOST_HOME)
+COMPILE                     = $(CC) $(NOLINK) $(CFLAGS) $(SYSINCLUDE)
 
 # Directories
 SRC_DIR                     = src/Sources
+GENERICIO_SRC_DIR           = $(SRC_DIR)/GenericIO
+NETWORK_SRC_DIR             = $(SRC_DIR)/Network
 HEAD_DIR                    = src/Headers
+GENERICIO_HEAD_DIR          = $(HEAD_DIR)/GenericIO
+NETWORK_HEAD_DIR            = $(HEAD_DIR)/Network
 OBJ_DIR                     = obj
+GENERICIO_OBJ_DIR           = $(OBJ_DIR)/GenericIO
+NETWORK_OBJ_DIR             = $(OBJ_DIR)/Network
 LIB_DIR                     = lib
 BIN_DIR                     = bin
 
@@ -16,46 +27,61 @@ BIN_DIR                     = bin
 MAIN                        = $(BIN_DIR)/main
 DRIVER_O                    = $(OBJ_DIR)/driver.o
 DRIVER_CPP                  = $(SRC_DIR)/driver.cpp
+GENERICIO_A                 = $(LIB_DIR)/GenericIO.a
 NETWORK_A                   = $(LIB_DIR)/libNetwork.a
-NETWORK_A_OBJ               = $(OBJ_DIR)/HttpContent.o\
-                                $(OBJ_DIR)/HttpByteContent.o\
-                                $(OBJ_DIR)/HttpFileStreamContent.o\
-                                $(OBJ_DIR)/HttpStringContent.o\
-                                $(OBJ_DIR)/HttpRequestMessage.o\
-                                $(OBJ_DIR)/HttpResponseMessage.o\
-                                $(OBJ_DIR)/WebClient.o
-NETWORK_A_SRC               = $(SRC_DIR)/HttpContent.cpp\
-                                $(SRC_DIR)/HttpByteContent.cpp\
-                                $(SRC_DIR)/HttpFileStreamContent.cpp\
-                                $(SRC_DIR)/HttpStringContent.cpp\
-                                $(SRC_DIR)/HttpRequestMessage.cpp\
-                                $(SRC_DIR)/HttpResponseMessage.cpp\
-                                $(SRC_DIR)/WebClient.cpp
+GENERICIO_A_OBJ             = $(GENERICIO_OBJ_DIR)/GenericStreamBuf.o\
+                                $(GENERICIO_OBJ_DIR)/GenericIStreamBuf.o
+GENERICIO_A_SRC             = $(GENERICIO_SRC_DIR)/GenericStreamBuf.cpp\
+                                $(GENERICIO_SRC_DIR)/GenericIStreamBuf.cpp
+NETWORK_A_OBJ               = $(NETWORK_OBJ_DIR)/HttpByteContent.o\
+                                $(NETWORK_OBJ_DIR)/HttpContent.o\
+                                $(NETWORK_OBJ_DIR)/HttpFileStreamContent.o\
+                                $(NETWORK_OBJ_DIR)/HttpRequestMessage.o\
+                                $(NETWORK_OBJ_DIR)/HttpResponseMessage.o\
+                                $(NETWORK_OBJ_DIR)/HttpStreamContent.o\
+                                $(NETWORK_OBJ_DIR)/HttpStringContent.o\
+                                $(NETWORK_OBJ_DIR)/WebClient.o
+NETWORK_A_SRC               = $(NETWORK_SRC_DIR)/HttpByteContent.cpp\
+                                $(NETWORK_SRC_DIR)/HttpContent.cpp\
+                                $(NETWORK_SRC_DIR)/HttpFileStreamContent.cpp\
+                                $(NETWORK_SRC_DIR)/HttpRequestMessage.cpp\
+                                $(NETWORK_SRC_DIR)/HttpResponseMessage.cpp\
+                                $(NETWORK_SRC_DIR)/HttpStreamContent.cpp\
+                                $(NETWORK_SRC_DIR)/HttpStringContent.cpp\
+                                $(NETWORK_SRC_DIR)/WebClient.cpp
 
 
 main: $(MAIN)
 
 # Executables
-$(MAIN): $(DRIVER_O) $(NETWORK_A) | $(BIN_DIR)
+$(MAIN): $(DRIVER_O) $(NETWORK_A) $(GENERICIO_A) | $(BIN_DIR)
 	$(CC) -L/usr/local/lib/boost/ $^ -lpthread -lcrypto -lssl -o $@
 
 # Libraries
 $(NETWORK_A): $(NETWORK_A_OBJ) | $(LIB_DIR)
 	$(AR) $@ $^
+$(GENERICIO_A): $(GENERICIO_A_OBJ) | $(LIB_DIR)
+	${AR} $@ $^
 
 # Object files
 $(DRIVER_O): $(DRIVER_CPP) | $(OBJ_DIR)
-	$(CC) $(NOLINK) $(CFLAGS) -I$(HEAD_DIR) $(DRIVER_CPP) -o $@
-
-$(NETWORK_A_OBJ): $(NETWORK_A_SRC) | $(OBJ_DIR)
+	$(COMPILE) -I $(HEAD_DIR) -I $(GENERICIO_HEAD_DIR) -I $(NETWORK_HEAD_DIR) $(DRIVER_CPP) -o $@
+$(GENERICIO_A_OBJ): $(GENERICIO_A_SRC) | $(GENERICIO_OBJ_DIR)
 	for source in $^; do\
-	    echo g++ -c -std=c++11 -Wall -Isrc/Headers -o $(OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
-	    g++ -c -std=c++11 -Wall -Isrc/Headers -o $(OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
+	    echo $(COMPILE) -I $(GENERICIO_HEAD_DIR) -o $(GENERICIO_OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
+	    $(COMPILE) -I $(GENERICIO_HEAD_DIR) -o $(GENERICIO_OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
+	done
+$(NETWORK_A_OBJ): $(NETWORK_A_SRC) | $(NETWORK_OBJ_DIR)
+	for source in $^; do\
+	    echo $(COMPILE) -I $(NETWORK_HEAD_DIR) -I $(GENERICIO_HEAD_DIR) -o $(NETWORK_OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
+	    $(COMPILE) -I $(NETWORK_HEAD_DIR) -I $(GENERICIO_HEAD_DIR) -o $(NETWORK_OBJ_DIR)/$$(basename $${source%.*}).o $$source;\
 	done
 
 
-$(OBJ_DIR):
-	mkdir $@
+$(GENERICIO_OBJ_DIR):
+	mkdir -p $@
+$(NETWORK_OBJ_DIR):
+	mkdir -p $@
 
 $(LIB_DIR):
 	mkdir $@
@@ -65,7 +91,7 @@ $(BIN_DIR):
 
 
 clean:
-	rm -f obj/* lib/* bin/*
+	rm -f $(GENERICIO_OBJ_DIR)/*.o $(NETWORK_OBJ_DIR)/*.o obj/*.o lib/* bin/*
 
 
 
