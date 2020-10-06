@@ -30,23 +30,6 @@ GenericIO::GenericStreamBuf::~GenericStreamBuf()
         InternalMem = nullptr;
     }
 }
-	
-
-// Public member functions
-void GenericIO::GenericStreamBuf::PrintStreamBuf() const
-{
-    std::cout << "GenericStreamBuf[PrintStreamBuf]: " << InternalMem << std::endl;
-}
-void GenericIO::GenericStreamBuf::PrintStatus() const
-{
-    std::cout << "GenericStreamBuf[PrintStatus]: PutBegin = " << pbase() - InternalMem << std::endl;
-    std::cout << "GenericStreamBuf[PrintStatus]: PutEnd = " << epptr() - InternalMem << std::endl;
-    std::cout << "GenericStreamBuf[PrintStatus]: PutCurrent = " << pptr() - InternalMem << std::endl;
-    std::cout << "GenericStreamBuf[PrintStatus]: GetBegin = " << eback() - InternalMem << std::endl;
-    std::cout << "GenericStreamBuf[PrintStatus]: GetEnd = " << egptr() - InternalMem << std::endl;
-    std::cout << "GenericStreamBuf[PrintStatus]: GetCurrent = " << gptr() - InternalMem << std::endl;
-    std::cout << "GenericStreamBuf[PrintStatus]: PCAdvance = " << PCAdvance << std::endl;
-}
 
 
 // Protected member functions
