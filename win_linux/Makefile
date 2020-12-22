@@ -1,13 +1,10 @@
-# Resources
-BOOST_HOME                  = /opt/cpp_packages/boost/boost_1_72_0
-
 # Compiler
 CC                          = g++
 AR                          = ar rcs
 RANLIB                      = ranlib
 NOLINK                      = -c
 CFLAGS                      = -std=c++11 -Wall
-SYSINCLUDE                  = -isystem $(BOOST_HOME)
+SYSINCLUDE                  = -isystem $(BOOST_HOME) -isystem $(OPENSSL_HOME)/include
 COMPILE                     = $(CC) $(NOLINK) $(CFLAGS) $(SYSINCLUDE)
 
 # Directories
@@ -27,7 +24,7 @@ BIN_DIR                     = bin
 MAIN                        = $(BIN_DIR)/main
 DRIVER_O                    = $(OBJ_DIR)/driver.o
 DRIVER_CPP                  = $(SRC_DIR)/driver.cpp
-GENERICIO_A                 = $(LIB_DIR)/GenericIO.a
+GENERICIO_A                 = $(LIB_DIR)/libGenericIO.a
 NETWORK_A                   = $(LIB_DIR)/libNetwork.a
 GENERICIO_A_OBJ             = $(GENERICIO_OBJ_DIR)/GenericStreamBuf.o\
                                 $(GENERICIO_OBJ_DIR)/GenericIStreamBuf.o
@@ -50,12 +47,12 @@ NETWORK_A_SRC               = $(NETWORK_SRC_DIR)/HttpByteContent.cpp\
                                 $(NETWORK_SRC_DIR)/HttpStringContent.cpp\
                                 $(NETWORK_SRC_DIR)/WebClient.cpp
 
-
+libs: $(NETWORK_A) $(GENERICIO_A)
 main: $(MAIN)
 
 # Executables
 $(MAIN): $(DRIVER_O) $(NETWORK_A) $(GENERICIO_A) | $(BIN_DIR)
-	$(CC) -L/usr/local/lib/boost/ $^ -lpthread -lcrypto -lssl -o $@
+	$(CC) -L $(OPENSSL_HOME)  $^ -lpthread -lcrypto -lssl -o $@
 
 # Libraries
 $(NETWORK_A): $(NETWORK_A_OBJ) | $(LIB_DIR)
@@ -81,6 +78,8 @@ $(NETWORK_A_OBJ): $(NETWORK_A_SRC) | $(NETWORK_OBJ_DIR)
 $(GENERICIO_OBJ_DIR):
 	mkdir -p $@
 $(NETWORK_OBJ_DIR):
+	mkdir -p $@
+$(OBJ_DIR):
 	mkdir -p $@
 
 $(LIB_DIR):

@@ -1,6 +1,7 @@
 #ifndef HTTPRESPONSEMESSAGE_H
 #define HTTPRESPONSEMESSAGE_H
 
+#include <map>
 #include "HttpStringContent.h"
 
 namespace Network
