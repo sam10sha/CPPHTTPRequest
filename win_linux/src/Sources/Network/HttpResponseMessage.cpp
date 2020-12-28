@@ -145,8 +145,8 @@ void Network::HttpResponseMessage::ParseRawHeader(const std::string& Header)
         HeaderLineDelimiterPosition = Line->find_first_of(':');
         if(HeaderLineDelimiterPosition != std::string::npos)
         {
-            HeaderKey = Line->substr(0, HeaderLineDelimiterPosition);
-            HeaderValue = Line->substr(HeaderLineDelimiterPosition + 1);
+            HeaderKey = Trim(Line->substr(0, HeaderLineDelimiterPosition));
+            HeaderValue = Trim(Line->substr(HeaderLineDelimiterPosition + 1));
             SingleIndex = mSingleHeaders.find(HeaderKey);
 			RangeOfElements = mMultiHeaders.equal_range(HeaderKey);
 			if(SingleIndex != mSingleHeaders.end())
