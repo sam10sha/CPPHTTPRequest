@@ -15,7 +15,7 @@ if [%4] == [] (
     goto error
 )
 if exist %4 (
-    findstr "EXPORTS" %4 >> nul && (
+    findstr "EXPORTS" %4 >> nul || (
     echo EXPORTS > %4
     )
 ) else (
@@ -24,10 +24,14 @@ if exist %4 (
 for %%a in (%3\*.obj) do (
     dumpbin /out:%3\%%~na.exp /symbols %%a
     for /f %%b in (%2) do (
-        for /f "tokens=6,8" %%c in ('findstr "%%b(" %3\%%~na.exp') do (
+        for /f "tokens=5,6,7,8" %%c in ('findstr "%%b" %3\%%~na.exp') do (
             if [%%c] == [External] (
-                findstr "%%d" %4 > nul || (
-                    echo %%d >> %4
+                findstr "%%e" %4 > nul || (
+                    echo %%e >> %4
+                )
+            ) else if [%%d] == [External] (
+                findstr "%%f" %4 > nul || (
+                    echo %%f >> %4
                 )
             )
         )
@@ -41,7 +45,7 @@ if [%3] == [] (
     goto error
 )
 if exist %3 (
-    findstr "EXPORTS" %3 && (
+    findstr "EXPORTS" %3 || (
         echo EXPORTS > %3
     )
 ) else (
